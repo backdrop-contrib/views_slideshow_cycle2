@@ -1,0 +1,10 @@
+name = Views Slideshow: Cycle2
+description = Adds a responsive rotating slideshow mode to Views Slideshow.
+dependencies[] = views_slideshow
+dependencies[] = libraries
+package = Views
+core = 7.x
+
+files[] = views_slideshow_cycle2.module
+files[] = views_slideshow_cycle2.views_slideshow.inc
+files[] = theme/views_slideshow_cycle2.theme.inc
