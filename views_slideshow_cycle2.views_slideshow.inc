@@ -201,14 +201,14 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   );
 
   // Action Advanced Options
-  $form['views_slideshow_cycle']['action_advanced'] = array(
+  $form['views_slideshow_cycle2']['action_advanced'] = array(
     '#type' => 'checkbox',
     '#title' => t('View Action Advanced Options'),
-    '#default_value' => $view->options['views_slideshow_cycle']['action_advanced'],
+    '#default_value' => $view->options['views_slideshow_cycle2']['action_advanced'],
   );
 
   // Need to wrap this so it indents correctly.
-  $form['views_slideshow_cycle']['action_advanced_wrapper'] = array(
+  $form['views_slideshow_cycle2']['action_advanced_wrapper'] = array(
     '#markup' => '<div class="vs-dependent">',
   );
 
