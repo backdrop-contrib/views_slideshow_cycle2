@@ -124,7 +124,7 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
     'speed' => $settings['speed'],
     'swipe' => $settings['swipe'] == 0 ? false : true,
     'timeout' => $settings['timeout'],
-    //'loader' => $settings['wait_for_image_load'] == 0 ? 'false' : 'wait', // This doesn't seem to be working as advertised
+    'loader' => $settings['image_loader'],
 
     'log' => 'false',
     'pager' => '#widget_pager_bottom_' . $vss_id . ', #widget_pager_top_' . $vss_id, // TODO: Check that vss_id is always correct

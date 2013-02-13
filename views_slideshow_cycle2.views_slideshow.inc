@@ -62,8 +62,7 @@ function views_slideshow_cycle2_views_slideshow_option_definition() {
       'nowrap' => array('default' => 0),
       'fixed_height' => array('default' => 1),
       'items_per_slide' => array('default' => 1),
-      'wait_for_image_load' => array('default' => 1),
-      'wait_for_image_load_timeout' => array('default' => 3000),
+      'image_loader' => array('default' => 'false'),
       'swipe' => array('default' => 1),
 
       // Internet Explorer Tweaks
@@ -340,32 +339,23 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
       ),
     ),
   );
-  $form['views_slideshow_cycle2']['wait_for_image_load'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Wait for all the slide images to load'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['wait_for_image_load'],
-    '#description' => t('If selected the slideshow will not start unless all the slide images are loaded.  This will fix some issues on IE7/IE8/Chrome/Opera.'),
+  */
+  $form['views_slideshow_cycle2']['image_loader'] = array(
+    '#type' => 'select',
+    '#options' => array(
+      'false' => t('None'),
+      'wait' => t('Wait'),
+      'true' => t('Quick'),
+    ),
+    '#title' => t('Image loader'),
+    '#default_value' => $view->options['views_slideshow_cycle2']['image_loader'],
+    '#description' => t('<strong>Wait</strong>: begin the slideshow after all images are loaded.') . '<br>' . t('<strong>Quick</strong>: begin the slideshow after any two images are loaded. Slides may appear out of order.'),
     '#states' => array(
       'visible' => array(
         ':input[name="style_options[views_slideshow_cycle2][action_advanced]"]' => array('checked' => TRUE),
       ),
     ),
   );
-  $form['views_slideshow_cycle']['wait_for_image_load_timeout'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Timeout'),
-    '#default_value' => $view->options['views_slideshow_cycle']['wait_for_image_load_timeout'],
-    '#description' => t('How long should it wait until it starts the slideshow anyway. Time is in milliseconds.'),
-    '#prefix' => '<div class="vs-dependent">',
-    '#suffix' => '</div>',
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-        ':input[name="style_options[views_slideshow_cycle][wait_for_image_load]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  */
 
   // Need to wrap this so it indents correctly.
   $form['views_slideshow_cycle']['action_advanced_wrapper_close'] = array(
