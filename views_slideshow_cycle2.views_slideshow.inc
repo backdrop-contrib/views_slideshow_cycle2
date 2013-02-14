@@ -5,6 +5,8 @@
  * The default options available with Views Slideshow: cycle.
  */
 
+include_once 'views_slideshow_cycle2.plugins.inc';
+
 /**
  * Implements hook_views_slideshow_slideshow_info().
  */
@@ -97,13 +99,18 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     'fadeout' => 'fadeout',
     'scrollHorz' => 'scrollHorz',
   );
+
+  $plugin_effects = drupal_map_assoc(array_keys(views_slideshow_cycle2_get_plugin_effects()));
+
   $form['views_slideshow_cycle2']['effect'] = array(
     '#type' => 'select',
     '#title' => t('Effect'),
-    '#options' => $effects,
+    '#options' => array_merge($effects, $plugin_effects),
     '#default_value' => $view->options['views_slideshow_cycle2']['effect'],
     '#description' => t('The transition effect that will be used to change between images.'),
   );
+
+  $form['views_slideshow_cycle2']['effect_options'] = views_slideshow_cycle2_effect_options();
 
   // Transition advanced options
   $form['views_slideshow_cycle2']['transition_advanced'] = array(

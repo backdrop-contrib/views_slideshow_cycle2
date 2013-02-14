@@ -134,6 +134,16 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
     'slides' => '> .views_slideshow_slide',
   );
 
+  // Implement effect-specific options
+  
+  preg_match('/[a-z]+/', $settings['effect'], $effect_base);
+  
+  if (isset($settings['effect_options'][$effect_base[0]])) {
+    foreach ($settings['effect_options'][$effect_base[0]] as $key => $value) {
+      $data_attributes[$key] = $value;
+    }
+  }
+
   $vars['data_attr'] = '';
 
   foreach ($data_attributes as $key => $value) {
