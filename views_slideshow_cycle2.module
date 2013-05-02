@@ -80,8 +80,9 @@ function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) 
     }
 
     if ($load = libraries_load_files($cycle2)) {
-      $effect = reset($settings)['effect'];
-      _views_slideshow_cycle2_load_effect_plugin($effect);
+      foreach ($settings as $options) {
+        _views_slideshow_cycle2_load_effect_plugin($options['effect']);
+      }
     }
 
     return $load;

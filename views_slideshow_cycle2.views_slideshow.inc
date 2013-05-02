@@ -110,7 +110,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#description' => t('The transition effect that will be used to change between images.'),
   );
 
-  $form['views_slideshow_cycle2']['effect_options'] = views_slideshow_cycle2_effect_options();
+  $form['views_slideshow_cycle2']['effect_options'] = views_slideshow_cycle2_effect_options($view);
 
   // Transition advanced options
   $form['views_slideshow_cycle2']['transition_advanced'] = array(
