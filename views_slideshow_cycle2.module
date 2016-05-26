@@ -43,7 +43,7 @@ function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
   $plugins = file_scan_directory($path, '/jquery\.cycle2\..*?\.js/');
 
   // We don't want effects from removed plugins hanging around
-  variable_set('views_slideshow_cycle2_plugin_effects', array());
+  config_set('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects', array());
 
   foreach ($plugins as $plugin) {
     if ($plugin->filename === 'jquery.cycle2.min.js') continue;
@@ -56,21 +56,21 @@ function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
 }
 
 function _views_slideshow_cycle2_detect_minified($library) {
-  $library_path = DRUPAL_ROOT . '/' . $library['library path'] . '/';
+  $library_path = BACKDROP_ROOT . '/' . $library['library path'] . '/';
 
   return file_exists($library_path . 'jquery.cycle2.min.js');
 }
 
 function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) {
   if (empty($module_path)) {
-    $module_path = drupal_get_path('module', 'views_slideshow_cycle2');
+    $module_path = backdrop_get_path('module', 'views_slideshow_cycle2');
   }
 
   if (!empty($settings)) {
-    drupal_add_js(array('viewsSlideshowCycle2' => $settings), 'setting');
+    backdrop_add_js(array('viewsSlideshowCycle2' => $settings), 'setting');
   }
 
-  drupal_add_js($module_path . '/js/views_slideshow_cycle2.js');
+  backdrop_add_js($module_path . '/js/views_slideshow_cycle2.js');
 
   $cycle2 = libraries_detect('jquery.cycle2');
   
@@ -94,7 +94,7 @@ function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) 
 }
 
 function _views_slideshow_cycle2_inspect_plugin($plugin) {
-  $contents = file_get_contents(DRUPAL_ROOT . '/' . $plugin->uri);
+  $contents = file_get_contents(BACKDROP_ROOT . '/' . $plugin->uri);
   $effects = views_slideshow_cycle2_get_plugin_effects();
   
   // Look for fn.cycle.transitions
@@ -104,7 +104,7 @@ function _views_slideshow_cycle2_inspect_plugin($plugin) {
     $effects[$transition] = $plugin->uri;
   }
 
-  variable_set('views_slideshow_cycle2_plugin_effects', serialize($effects));
+  config_set('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects', serialize($effects));
 }
 
 /**
@@ -114,7 +114,7 @@ function _views_slideshow_cycle2_load_effect_plugin($effect) {
     $plugin_effects = views_slideshow_cycle2_get_plugin_effects();
 
     if (isset($plugin_effects[$effect])) {
-      drupal_add_js($plugin_effects[$effect]);
+      backdrop_add_js($plugin_effects[$effect]);
     }
 }
 
@@ -122,8 +122,7 @@ function _views_slideshow_cycle2_load_effect_plugin($effect) {
  * Describe additional effects from plugins.
  */
 function views_slideshow_cycle2_get_plugin_effects() {
-  $effects = variable_get('views_slideshow_cycle2_plugin_effects', array());
-
+  $effects = config_get('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects');
   if (is_string($effects)) {
     $effects = unserialize($effects);
   }
@@ -181,4 +180,16 @@ function template_preprocess_views_slideshow_cycle2_main_frame_row(&$vars) {
 
 function template_preprocess_views_slideshow_cycle2_main_frame_row_item(&$vars) {
   _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame_row_item($vars);
+}
+
+
+/**
+ * Implements hook_config_info().
+ */
+function views_slideshow_cycle2_config_info() {
+  $prefixes['views_slideshow_cycle2.settings'] = array(
+    'label' => t('Views Slideshow Cycle 2 settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
 }

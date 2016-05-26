@@ -1,5 +1,5 @@
 (function($) {
-  Drupal.behaviors.viewsSlideshowCycle2 = {
+  Backdrop.behaviors.viewsSlideshowCycle2 = {
     attach: function(context) {
       $('.views-slideshow-cycle2-main-frame').cycle();
     }

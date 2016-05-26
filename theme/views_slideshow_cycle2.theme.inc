@@ -53,7 +53,7 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
   // want to add is not already there. If it is already there then append -[num]
   // to the id to make it unique.
   $slideshow_count = 1;
-  $current_settings = drupal_add_js();
+  $current_settings = backdrop_add_js();
   foreach ($current_settings['settings']['data'] AS $current_setting) {
     if (isset($current_setting['viewsSlideshowCycle2'])) {
       $current_keys = array_keys($current_setting['viewsSlideshowCycle2']);
@@ -68,10 +68,10 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
     $settings['vss_id'] = $vss_id;
   }
 
-  $module_path = drupal_get_path('module', 'views_slideshow_cycle2');
+  $module_path = backdrop_get_path('module', 'views_slideshow_cycle2');
 
   // Load our cycle css
-  drupal_add_css($module_path . '/views_slideshow_cycle2.css', 'file');
+  backdrop_add_css($module_path . '/views_slideshow_cycle2.css', 'file');
 
   _views_slideshow_cycle2_load_js($module_path, array('#views_slideshow_cycle2_main_' . $vss_id => $settings));
 
