@@ -496,7 +496,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
 }
 
 function views_slideshow_cycle2_form_options_js($element, &$form_state, &$form) {
-  ctools_add_js('formoptions', 'views_slideshow_cycle2');
+  backdrop_add_js('formoptions', 'views_slideshow_cycle2');
   return $element;
 }
 
