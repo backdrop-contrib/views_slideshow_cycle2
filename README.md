@@ -15,7 +15,7 @@ on capable devices.
 This port is incomplete and is based on a sandbox project for Drupal,
 see https://www.drupal.org/sandbox/BenYoung/1832338.
 I have found it necessary to add into the view the class 'cycle-slideshow' to
-a <div> surrounding the image files in order to get the images to cycle.
+a div surrounding the image files in order to get the images to cycle.
 
 ## Installation
 
