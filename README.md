@@ -16,7 +16,7 @@ This port is based on a sandbox project for Drupal,
 see https://www.drupal.org/sandbox/BenYoung/1832338.
 I have found it necessary when creating the slideshow
 to add into the view the class 'cycle-slideshow' to
-a <div> surrounding the image files in order to get the images to cycle.
+a div surrounding the image files in order to get the images to cycle.
 Perhaps in future this could be built into the module's theme.
 
 ## Installation
