@@ -32,9 +32,6 @@ function views_slideshow_cycle2_libraries_info() {
           'pattern' => '/ver.*? ([a-z0-9\-\.]+)/i',
           'lines' => 5,
         ),
-        'variant arguments' => array(
-          'variant' => 'minified',
-        ),
         'variant callback' => '_views_slideshow_cycle2_detect_minified',
       ),
     ),
@@ -66,9 +63,9 @@ function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
 }
 
 function _views_slideshow_cycle2_detect_minified($library) {
-  $library_path = BACKDROP_ROOT . '/' . $library['library path'] . '/';
+  $library_path = libraries_get_path($library['machine name']);
 
-  return file_exists($library_path . 'jquery.cycle2.min.js');
+  return file_exists($library_path . '/jquery.cycle2.min.js');
 }
 
 function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) {
