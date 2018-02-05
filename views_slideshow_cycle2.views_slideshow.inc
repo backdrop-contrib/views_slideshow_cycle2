@@ -504,13 +504,13 @@ function views_slideshow_cycle2_form_options_js($element, &$form_state, &$form) 
  * Implements hook_views_slideshow_options_form_validate().
  */
 function views_slideshow_cycle2_views_slideshow_options_form_validate(&$form, &$form_state, &$view) {
-  if (!is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['speed'])) {
+  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['speed']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['speed'])) {
     form_error($form['views_slideshow_cycle2']['speed'], t('!setting must be numeric!', array('Speed')));
   }
-  if (!is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['timeout'])) {
+  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['timeout']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['timeout'])) {
     form_error($form['views_slideshow_cycle2']['speed'], t('!setting must be numeric!', array('timeout')));
   }
-  if (!is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['remember_slide_days'])) {
+  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['remember_slide_days']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['remember_slide_days'])) {
     form_error($form['views_slideshow_cycle2']['remember_slide_days'], t('!setting must be numeric!', array('Slide days')));
   }
 }

@@ -68,7 +68,7 @@ function _views_slideshow_cycle2_detect_minified($library) {
   return file_exists($library_path . '/jquery.cycle2.min.js');
 }
 
-function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) {
+function _views_slideshow_cycle2_load_js($module_path = null, $settings = array()) {
   if (empty($module_path)) {
     $module_path = backdrop_get_path('module', 'views_slideshow_cycle2');
   }
