@@ -1,5 +1,12 @@
 <?php
+/**
+ * @file
+ * Adds a responsive rotating slideshow mode to Views Slideshow.
+ */
 
+/**
+ * Implements hook_libraries_info().
+ */
 function views_slideshow_cycle2_libraries_info() {
   $libraries['jquery.cycle2'] = array(
     'name' => 'Cycle2',
@@ -36,6 +43,9 @@ function views_slideshow_cycle2_libraries_info() {
   return $libraries;
 }
 
+/**
+ * Implements hook_libraries_info_alter().
+ */
 function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
   // Look for optional plugins and add them to the files array if available
 
@@ -73,7 +83,7 @@ function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) 
   backdrop_add_js($module_path . '/js/views_slideshow_cycle2.js');
 
   $cycle2 = libraries_detect('jquery.cycle2');
-  
+
   if ($cycle2['installed'] || _views_slideshow_cycle2_detect_minified($cycle2)) {
     if (!$cycle2['installed']) {
       $cycle2 = libraries_load('jquery.cycle2', 'minified');
@@ -96,7 +106,7 @@ function _views_slideshow_cycle2_load_js($module_path = null, $settings = null) 
 function _views_slideshow_cycle2_inspect_plugin($plugin) {
   $contents = file_get_contents(BACKDROP_ROOT . '/' . $plugin->uri);
   $effects = views_slideshow_cycle2_get_plugin_effects();
-  
+
   // Look for fn.cycle.transitions
   preg_match_all('/fn.cycle.transitions.([a-z]+)?/i', $contents, $matches);
 
@@ -193,3 +203,4 @@ function views_slideshow_cycle2_config_info() {
   );
   return $prefixes;
 }
+
