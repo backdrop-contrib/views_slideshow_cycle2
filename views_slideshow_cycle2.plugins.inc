@@ -18,30 +18,32 @@ function views_slideshow_cycle2_effect_options($view) {
     ),
   );
 
-  $tile_options = $view->options['views_slideshow_cycle2']['effect_options']['tile'];
+  if (!empty($view->options['views_slideshow_cycle2']['effect_options'])) {
+    $tile_options = $view->options['views_slideshow_cycle2']['effect_options']['tile'];
 
-  $form['tile']['tile-vertical'] = array(
-    '#type' => 'select',
-    '#title' => t('Direction'),
-    '#options' => array(
-      'true' => t('Vertical'),
-      'false' => t('Horizontal'),
-    ),
-    '#default_value' => $tile_options['tile-vertical'],
-  );
+    $form['tile']['tile-vertical'] = array(
+      '#type' => 'select',
+      '#title' => t('Direction'),
+      '#options' => array(
+        'true' => t('Vertical'),
+        'false' => t('Horizontal'),
+      ),
+      '#default_value' => $tile_options['tile-vertical'],
+    );
 
-  $form['tile']['tile-count'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Tile Count'),
-    '#default_value' => $tile_options['tile-count'],
-  );
+    $form['tile']['tile-count'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Tile Count'),
+      '#default_value' => $tile_options['tile-count'],
+    );
 
-  $form['tile']['tile-delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title Delay'),
-    '#description' => t('The number of milliseconds to delay each individual tile transition.'),
-    '#default_value' => $tile_options['tile-delay'],
-  );
+    $form['tile']['tile-delay'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Title Delay'),
+      '#description' => t('The number of milliseconds to delay each individual tile transition.'),
+      '#default_value' => $tile_options['tile-delay'],
+    );
+  }
 
   return $form;
 }
