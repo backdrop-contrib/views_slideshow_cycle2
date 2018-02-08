@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Adds a responsive rotating slideshow mode to Views Slideshow.
+ * Integrates the Cycle2 jQuery plugin with the Views Slideshow module.
  */
 
 /**
@@ -14,7 +14,6 @@ function views_slideshow_cycle2_libraries_info() {
     'download url' => 'http://jquery.malsup.com/cycle2/download/',
     'version arguments' => array(
       'file' => 'jquery.cycle2.js',
-      // Version: BETA-20121030
       'pattern' => '/ver.*? ([a-z0-9\-\.]+)/i',
       'lines' => 5,
     ),
@@ -28,9 +27,6 @@ function views_slideshow_cycle2_libraries_info() {
         ),
         'files' => array(
           'js' => array('jquery.cycle2.min.js'),
-          // Version: BETA-20121030
-          'pattern' => '/ver.*? ([a-z0-9\-\.]+)/i',
-          'lines' => 5,
         ),
         'variant callback' => '_views_slideshow_cycle2_detect_minified',
       ),
@@ -41,31 +37,96 @@ function views_slideshow_cycle2_libraries_info() {
 }
 
 /**
- * Implements hook_libraries_info_alter().
+ * Determine if the minified variant of the Cycle2 library is available.
+ *
+ * Variant callback for views_slideshow_cycle2_libraries_info().
  */
-function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
-  // Look for optional plugins and add them to the files array if available
-
-  $path = libraries_get_path('jquery.cycle2');
-  $plugins = file_scan_directory($path, '/jquery\.cycle2\..*?\.js/');
-
-  // We don't want effects from removed plugins hanging around
-  config_set('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects', array());
-
-  foreach ($plugins as $plugin) {
-    if ($plugin->filename === 'jquery.cycle2.min.js') continue;
-
-    $libraries['jquery.cycle2']['variants']['minified']['files']['js'][$plugin->filename] = array('weight' => 1);
-    $libraries['jquery.cycle2']['files']['js'][$plugin->filename] = array('weight' => 1);
-
-    _views_slideshow_cycle2_inspect_plugin($plugin);
-  }
-}
-
 function _views_slideshow_cycle2_detect_minified($library) {
   $library_path = libraries_get_path($library['machine name']);
 
   return file_exists($library_path . '/jquery.cycle2.min.js');
+}
+
+/**
+ * Implements hook_libraries_info_alter().
+ *
+ * Add additional plugins to the library, and get any effects provided by those
+ * plugins.
+ */
+function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
+  $effects = _views_slideshow_cycle2_get_plugin_effects();
+  $transition_plugins = _views_slideshow_cycle2_transition_plugins();
+
+  // Remove old effects.
+  config_set('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects', array());
+
+  // Look for optional plugins.
+  $plugins = file_scan_directory(libraries_get_path('jquery.cycle2'), '/jquery\.cycle2\..*?\.js/');
+  foreach ($plugins as $plugin) {
+    if ($plugin->filename !== 'jquery.cycle2.min.js') {
+      // Add plugin to library.
+      $libraries['jquery.cycle2']['files']['js'][$plugin->filename] = array('weight' => 1);
+      $libraries['jquery.cycle2']['variants']['minified']['files']['js'][$plugin->filename] = array('weight' => 1);
+
+      // Get any transition effects.
+      $filename_parts = explode('.', $plugin->filename);
+      $plugin_name = $filename_parts[2];
+      if (!empty($transition_plugins[$plugin_name])) {
+        foreach ($transition_plugins[$plugin_name] as $effect) {
+          $effects[$effect] = $plugin->uri;
+        }
+      }
+    }
+  }
+
+  // Save new effects.
+  config_set('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects', serialize($effects));
+}
+
+/**
+ * Load plugin effects.
+ *
+ * @return array
+ *   An associative array of plugin effects, where they keys are effect names
+ *   and the values are URIs of the effect's plugin.
+ */
+function _views_slideshow_cycle2_get_plugin_effects() {
+  $effects = config_get('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects');
+  if (is_string($effects)) {
+    $effects = unserialize($effects);
+  }
+
+  return $effects;
+}
+
+/**
+ * Get supported transition plugins.
+ *
+ * @return array
+ *   An associative array of supported transition plugins, where the keys are
+ *   plugin names (based off the filename: e.g. 'jquery.cycle2.[NAME](.min).js')
+ *   and the values are arrays of the effects that plugin provides.
+ */
+function _views_slideshow_cycle2_transition_plugins() {
+  return array(
+    'carousel' => array(
+      'carousel',
+    ),
+    'flip' => array(
+      'flipHorz',
+      'flipVert',
+    ),
+    'scrollVert' => array(
+      'scrollVert',
+    ),
+    'shuffle' => array(
+      'shuffle',
+    ),
+    'tile' => array(
+      'tileSlide',
+      'tileBlind',
+    ),
+  );
 }
 
 function _views_slideshow_cycle2_load_js($module_path = null, $settings = array()) {
@@ -100,41 +161,15 @@ function _views_slideshow_cycle2_load_js($module_path = null, $settings = array(
   }
 }
 
-function _views_slideshow_cycle2_inspect_plugin($plugin) {
-  $contents = file_get_contents(BACKDROP_ROOT . '/' . $plugin->uri);
-  $effects = views_slideshow_cycle2_get_plugin_effects();
-
-  // Look for fn.cycle.transitions
-  preg_match_all('/fn.cycle.transitions.([a-z]+)?/i', $contents, $matches);
-
-  foreach ($matches[1] as $transition) {
-    $effects[$transition] = $plugin->uri;
-  }
-
-  config_set('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects', serialize($effects));
-}
-
 /**
  * Check if an effect is provided by a plugin, and load it if so.
  */
 function _views_slideshow_cycle2_load_effect_plugin($effect) {
-    $plugin_effects = views_slideshow_cycle2_get_plugin_effects();
+    $plugin_effects = _views_slideshow_cycle2_get_plugin_effects();
 
     if (isset($plugin_effects[$effect])) {
       backdrop_add_js($plugin_effects[$effect]);
     }
-}
-
-/**
- * Describe additional effects from plugins.
- */
-function views_slideshow_cycle2_get_plugin_effects() {
-  $effects = config_get('views_slideshow_cycle2.settings','views_slideshow_cycle2_plugin_effects');
-  if (is_string($effects)) {
-    $effects = unserialize($effects);
-  }
-
-  return $effects;
 }
 
 /**

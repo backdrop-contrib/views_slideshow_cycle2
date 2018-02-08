@@ -1,8 +1,8 @@
 name = Views Slideshow: Cycle2
-description = Adds a responsive rotating slideshow mode to Views Slideshow.
-dependencies[] = views_slideshow
-dependencies[] = libraries
-package = Views
+description = Integrates the Cycle2 jQuery plugin with the Views Slideshow module.
 backdrop = 1.x
 type = module
+package = Views
+dependencies[] = views_slideshow
+dependencies[] = libraries
 

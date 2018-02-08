@@ -100,7 +100,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     'scrollHorz' => 'scrollHorz',
   );
 
-  $plugin_effects = backdrop_map_assoc(array_keys(views_slideshow_cycle2_get_plugin_effects()));
+  $plugin_effects = backdrop_map_assoc(array_keys(_views_slideshow_cycle2_get_plugin_effects()));
 
   $form['views_slideshow_cycle2']['effect'] = array(
     '#type' => 'select',
