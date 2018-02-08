@@ -47,7 +47,7 @@ This project is GPL v2 software. See the LICENSE.txt file in this directory for 
         
 ## Current Maintainer for Backdrop
 
-Graham Oliver (github.com/Graham-72/)
+Peter Anderson (github.com/BWPanda)
 
 ## Credits
 
