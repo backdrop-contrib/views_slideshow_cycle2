@@ -1,0 +1,22 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the Views Slideshow: Cycle2
+ * module.
+ */
+
+/**
+ * Rename & convert plugin effects string to array.
+ */
+function hook_update_1200() {
+  $config = config('views_slideshow_cycle2.settings');
+
+  $effects = $config->get('views_slideshow_cycle2_plugin_effects');
+  if (is_string($effects)) {
+    $effects = unserialize($effects);
+  }
+
+  $config->set('plugin_effects', $effects);
+  $config->clear('views_slideshow_cycle2_plugin_effects');
+}
+

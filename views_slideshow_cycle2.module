@@ -13,23 +13,12 @@ function views_slideshow_cycle2_libraries_info() {
     'vendor url' => 'http://jquery.malsup.com/cycle2/',
     'download url' => 'http://jquery.malsup.com/cycle2/download/',
     'version arguments' => array(
-      'file' => 'jquery.cycle2.js',
+      'file' => 'jquery.cycle2.min.js',
       'pattern' => '/ver.*? ([a-z0-9\-\.]+)/i',
       'lines' => 5,
     ),
     'files' => array(
-      'js' => array('jquery.cycle2.js'),
-    ),
-    'variants' => array(
-      'minified' => array(
-        'version arguments' => array(
-          'file' => 'jquery.cycle2.min.js',
-        ),
-        'files' => array(
-          'js' => array('jquery.cycle2.min.js'),
-        ),
-        'variant callback' => '_views_slideshow_cycle2_detect_minified',
-      ),
+      'js' => array('jquery.cycle2.min.js'),
     ),
   );
 
@@ -37,66 +26,33 @@ function views_slideshow_cycle2_libraries_info() {
 }
 
 /**
- * Determine if the minified variant of the Cycle2 library is available.
- *
- * Variant callback for views_slideshow_cycle2_libraries_info().
- */
-function _views_slideshow_cycle2_detect_minified($library) {
-  $library_path = libraries_get_path($library['machine name']);
-
-  return file_exists($library_path . '/jquery.cycle2.min.js');
-}
-
-/**
  * Implements hook_libraries_info_alter().
  *
- * Add additional plugins to the library, and get any effects provided by those
- * plugins.
+ * Add plugins to the library, and get any effects provided by the plugins.
  */
 function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
-  $effects = _views_slideshow_cycle2_get_plugin_effects();
-  $transition_plugins = _views_slideshow_cycle2_transition_plugins();
+  // Ignore old effects (in case plugins have been removed).
+  $effects = array();
+  $transition_plugins = _get_supported_plugins();
 
-  // Remove old effects.
-  config_set('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects', array());
-
-  // Look for optional plugins.
-  $plugins = file_scan_directory(libraries_get_path('jquery.cycle2'), '/jquery\.cycle2\..*?\.js/');
+  // Get all plugins.
+  $plugins = file_scan_directory(libraries_get_path('jquery.cycle2'), '/jquery\.cycle2\..*?\.min\.js/i');
   foreach ($plugins as $plugin) {
-    if ($plugin->filename !== 'jquery.cycle2.min.js') {
-      // Add plugin to library.
-      $libraries['jquery.cycle2']['files']['js'][$plugin->filename] = array('weight' => 1);
-      $libraries['jquery.cycle2']['variants']['minified']['files']['js'][$plugin->filename] = array('weight' => 1);
+    // Add plugin to library.
+    $libraries['jquery.cycle2']['files']['js'][$plugin->filename] = array('weight' => 1);
 
-      // Get any transition effects.
-      $filename_parts = explode('.', $plugin->filename);
-      $plugin_name = $filename_parts[2];
-      if (!empty($transition_plugins[$plugin_name])) {
-        foreach ($transition_plugins[$plugin_name] as $effect) {
-          $effects[$effect] = $plugin->uri;
-        }
+    // Get any effects.
+    $filename_parts = explode('.', $plugin->filename);
+    $plugin_name = $filename_parts[2];
+    if (!empty($transition_plugins[$plugin_name])) {
+      foreach ($transition_plugins[$plugin_name] as $effect) {
+        $effects[$effect] = $plugin->uri;
       }
     }
   }
 
   // Save new effects.
-  config_set('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects', serialize($effects));
-}
-
-/**
- * Load plugin effects.
- *
- * @return array
- *   An associative array of plugin effects, where they keys are effect names
- *   and the values are URIs of the effect's plugin.
- */
-function _views_slideshow_cycle2_get_plugin_effects() {
-  $effects = config_get('views_slideshow_cycle2.settings', 'views_slideshow_cycle2_plugin_effects');
-  if (is_string($effects)) {
-    $effects = unserialize($effects);
-  }
-
-  return $effects;
+  config_set('views_slideshow_cycle2.settings', 'plugin_effects', $effects);
 }
 
 /**
@@ -104,10 +60,10 @@ function _views_slideshow_cycle2_get_plugin_effects() {
  *
  * @return array
  *   An associative array of supported transition plugins, where the keys are
- *   plugin names (based off the filename: e.g. 'jquery.cycle2.[NAME](.min).js')
+ *   plugin names (based off the filename: e.g. 'jquery.cycle2.[NAME].min.js')
  *   and the values are arrays of the effects that plugin provides.
  */
-function _views_slideshow_cycle2_transition_plugins() {
+function _get_supported_plugins() {
   return array(
     'carousel' => array(
       'carousel',
