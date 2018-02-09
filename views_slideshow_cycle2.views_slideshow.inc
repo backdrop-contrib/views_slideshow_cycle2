@@ -1,17 +1,14 @@
 <?php
-
 /**
  * @file
- * The default options available with Views Slideshow: cycle.
+ * Integration with the Views Slideshow module.
  */
-
-include_once 'views_slideshow_cycle2.plugins.inc';
 
 /**
  * Implements hook_views_slideshow_slideshow_info().
  */
 function views_slideshow_cycle2_views_slideshow_slideshow_info() {
-  $options = array(
+  return array(
     'views_slideshow_cycle2' => array(
       'name' => t('Cycle2'),
       'accepts' => array(
@@ -25,98 +22,97 @@ function views_slideshow_cycle2_views_slideshow_slideshow_info() {
         'transitionBegin',
         'transitionEnd',
         'goToSlide',
+        'nextSlide',
         'pause',
         'play',
-        'nextSlide',
         'previousSlide',
       ),
     ),
   );
-  return $options;
 }
 
 /**
- * Implements hook_views_slideshow_option_definition().
- */
-function views_slideshow_cycle2_views_slideshow_option_definition() {
-  $options['views_slideshow_cycle2'] = array(
-    'contains' => array(
-      // Transition
-      'effect' => array('default' => 'fade'),
-      'transition_advanced' => array('default' => 0),
-      'timeout' => array('default' => 5000),
-      'speed' => array('default' => 700), //normal
-      'delay' => array('default' => 0),
-      'sync' => array('default' => 1),
-      'random' => array('default' => 0),
-
-      // Action
-      'pause' => array('default' => 1),
-      'pause_on_click' => array('default' => 0),
-      'action_advanced' => array('default' => 0),
-      'start_paused' => array('default', 0),
-      'remember_slide' => array('default' => 0),
-      'remember_slide_days' => array('default' => 1),
-      'pause_in_middle' => array('default' => 0),
-      'pause_when_hidden' => array('default' => 0),
-      'pause_when_hidden_type' => array('default' => 'full'),
-      'amount_allowed_visible' => array('default' => ''),
-      'nowrap' => array('default' => 0),
-      'fixed_height' => array('default' => 1),
-      'items_per_slide' => array('default' => 1),
-      'image_loader' => array('default' => 'false'),
-      'swipe' => array('default' => 1),
-
-      // Internet Explorer Tweaks
-      'cleartype' => array('default' => 'true'),
-      'cleartypenobg' => array('default' => 'false'),
-
-      // Advanced
-      'advanced_options' => array('default' => '{}'),
-    ),
-  );
-  return $options;
-}
-
-/**
- * Implements hook_views_slideshow_slideshow_slideshow_type_form().
+ * Implements hook_views_slideshow_slideshow_type_form().
  */
 function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$form_state, &$view) {
-  if (!_views_slideshow_cycle2_load_js()) {
+  form_load_include($form_state, 'inc', 'views_slideshow_cycle2', 'views_slideshow_cycle2.plugins');
+  $default_values = $view->options['views_slideshow_cycle2'];
+
+  // Display message if Cycle2 plugin not installed.
+  $library = libraries_detect('jquery.cycle2');
+  if (empty($library['installed'])) {
     $form['views_slideshow_cycle2']['no_cycle2_js'] = array(
-      '#markup' => '<div style="color: red">' . t('You need to install the jQuery Cycle2 plugin. Create a directory in sites/all/libraries called jquery.cycle2, and then copy jquery.cycle2.js or jquery.cycle2.min.js into it. You can find the plugin at !url.', array('!url' => l('http://jquery.malsup.com/cycle2', 'http://jquery.malsup.com/cycle2', array('attributes' => array('target' => '_blank'))))) . '</div>',
+      '#markup' => '<div style="color: red;">' . t('The Cycle2 jQuery plugin is not installed. Please refer to the Views Slideshow: Cycle2 README file for installation instructions.') . '</div>',
     );
   }
 
-  // Transition
+  // Transition settings.
   $form['views_slideshow_cycle2']['transition'] = array(
     '#markup' => '<h2>' . t('Transition') . '</h2>',
   );
 
-  $effects = array(
-    'none' => 'none',
-    'fade' => 'fade',
-    'fadeout' => 'fadeout',
-    'scrollHorz' => 'scrollHorz',
-  );
-
-  $plugin_effects = backdrop_map_assoc(array_keys(_views_slideshow_cycle2_get_plugin_effects()));
-
+  $plugin_effects = backdrop_map_assoc(array_keys(config_get('views_slideshow_cycle2.settings', 'plugin_effects')));
   $form['views_slideshow_cycle2']['effect'] = array(
     '#type' => 'select',
     '#title' => t('Effect'),
-    '#options' => array_merge($effects, $plugin_effects),
-    '#default_value' => $view->options['views_slideshow_cycle2']['effect'],
     '#description' => t('The transition effect that will be used to change between images.'),
+    '#options' => array(
+      'none' => 'none',
+      'fade' => 'fade',
+      'fadeout' => 'fadeout',
+      'scrollHorz' => 'scrollHorz',
+    ) + $plugin_effects,
+    '#default_value' => $default_values['effect'],
   );
 
-  $form['views_slideshow_cycle2']['effect_options'] = views_slideshow_cycle2_effect_options($view);
+  // Create array of all options-enabled effects.
+  $conditions = array();
+  foreach (views_slideshow_cycle2_supported_plugins() as $plugin) {
+    if (!empty($plugin['options'])) {
+      foreach ($plugin['effects'] as $effect) {
+        $conditions[]['value'] = $effect;
+      }
+    }
+  }
+  $form['views_slideshow_cycle2']['effect_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Effect options'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="style_options[views_slideshow_cycle2][effect]"]' => $conditions,
+      ),
+    ),
+  );
+
+  foreach (views_slideshow_cycle2_supported_plugins() as $plugin => $plugin_info) {
+    if (!empty($plugin_info['options'])) {
+      // Create array of this plugin's effects.
+      $conditions = array();
+      foreach ($plugin_info['effects'] as $effect) {
+        $conditions[]['value'] = $effect;
+      }
+      $form['views_slideshow_cycle2']['effect_options'][$plugin] = array(
+        '#type' => 'container',
+        '#states' => array(
+          'visible' => array(
+            ':input[name="style_options[views_slideshow_cycle2][effect]"]' => $conditions,
+          ),
+        ),
+      );
+
+      // Get form options from plugin.
+      call_user_func_array($plugin_info['options'], array(
+        &$form['views_slideshow_cycle2']['effect_options'][$plugin],
+        $default_values['effect_options'][$plugin],
+      ));
+    }
+  }
 
   // Transition advanced options
   $form['views_slideshow_cycle2']['transition_advanced'] = array(
     '#type' => 'checkbox',
     '#title' => t('View Transition Advanced Options'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['transition_advanced'],
+    '#default_value' => $default_values['transition_advanced'],
   );
 
   // Need to wrap this so it indents correctly.
@@ -127,7 +123,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['timeout'] = array(
     '#type' => 'textfield',
     '#title' => t('Timer delay'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['timeout'],
+    '#default_value' => $default_values['timeout'],
     '#description' => t('Amount of time in milliseconds between transitions. Set the value to 0 to not rotate the slideshow automatically.'),
     '#states' => array(
       'visible' => array(
@@ -138,7 +134,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['speed'] = array(
     '#type' => 'textfield',
     '#title' => t('Speed'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['speed'],
+    '#default_value' => $default_values['speed'],
     '#description' => t('Time in milliseconds that each transition lasts. Numeric only!'),
     '#states' => array(
       'visible' => array(
@@ -149,7 +145,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['delay'] = array(
     '#type' => 'textfield',
     '#title' => t('Initial slide delay offset'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['delay'],
+    '#default_value' => $default_values['delay'],
     '#description' => t('Amount of time in milliseconds for the first slide to transition. This number will be added to Timer delay to create the initial delay.  For example if Timer delay is 4000 and Initial delay is 2000 then the first slide will change at 6000ms (6 seconds).  If Initial delay is -2000 then the first slide will change at 2000ms (2 seconds).'),
     '#states' => array(
       'visible' => array(
@@ -160,7 +156,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['sync'] = array(
     '#type' => 'checkbox',
     '#title' => t('Sync'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['sync'],
+    '#default_value' => $default_values['sync'],
     '#description' => t('The sync option controls whether the slide transitions occur simultaneously. The default is selected which means that the current slide transitions out as the next slide transitions in. By unselecting this option you can get some interesting twists on your transitions.'),
     '#states' => array(
       'visible' => array(
@@ -171,7 +167,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['swipe'] = array(
     '#type' => 'checkbox',
     '#title' => t('Swipe'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['sync'],
+    '#default_value' => $default_values['sync'],
     '#description' => t('Enable browsing slides by swipe action on capable devices.'),
     '#states' => array(
       'visible' => array(
@@ -183,7 +179,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#type' => 'checkbox',
     '#title' => t('Random'),
     '#description' => t('This option controls the order items are displayed. The default setting, unselected, uses the views ordering. Selected will cause the images to display in a random order.'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['random'],
+    '#default_value' => $default_values['random'],
     '#states' => array(
       'visible' => array(
         ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
@@ -202,7 +198,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['pause'] = array(
     '#type' => 'checkbox',
     '#title' => t('Pause on hover'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['pause'],
+    '#default_value' => $default_values['pause'],
     '#description' => t('Pause when hovering on the slideshow image.'),
   );
 
@@ -210,7 +206,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['action_advanced'] = array(
     '#type' => 'checkbox',
     '#title' => t('View Action Advanced Options'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['action_advanced'],
+    '#default_value' => $default_values['action_advanced'],
   );
 
   // Need to wrap this so it indents correctly.
@@ -314,7 +310,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['nowrap'] = array(
     '#type' => 'checkbox',
     '#title' => t('End slideshow after last slide'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['nowrap'],
+    '#default_value' => $default_values['nowrap'],
     '#description' => t('If selected the slideshow will end when it gets to the last slide.'),
     '#states' => array(
       'visible' => array(
@@ -355,7 +351,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
       'true' => t('Quick'),
     ),
     '#title' => t('Image loader'),
-    '#default_value' => $view->options['views_slideshow_cycle2']['image_loader'],
+    '#default_value' => $default_values['image_loader'],
     '#description' => t('<strong>Wait</strong>: begin the slideshow after all images are loaded.') . '<br>' . t('<strong>Quick</strong>: begin the slideshow after any two images are loaded. Slides may appear out of order.'),
     '#states' => array(
       'visible' => array(
@@ -493,6 +489,49 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     );
   }
   */
+}
+
+/**
+ * Implements hook_views_slideshow_option_definition().
+ */
+function views_slideshow_cycle2_views_slideshow_option_definition() {
+  $options['views_slideshow_cycle2'] = array(
+    'contains' => array(
+      // Transition
+      'effect' => array('default' => 'fade'),
+      'transition_advanced' => array('default' => 0),
+      'timeout' => array('default' => 5000),
+      'speed' => array('default' => 700), //normal
+      'delay' => array('default' => 0),
+      'sync' => array('default' => 1),
+      'random' => array('default' => 0),
+
+      // Action
+      'pause' => array('default' => 1),
+      'pause_on_click' => array('default' => 0),
+      'action_advanced' => array('default' => 0),
+      'start_paused' => array('default', 0),
+      'remember_slide' => array('default' => 0),
+      'remember_slide_days' => array('default' => 1),
+      'pause_in_middle' => array('default' => 0),
+      'pause_when_hidden' => array('default' => 0),
+      'pause_when_hidden_type' => array('default' => 'full'),
+      'amount_allowed_visible' => array('default' => ''),
+      'nowrap' => array('default' => 0),
+      'fixed_height' => array('default' => 1),
+      'items_per_slide' => array('default' => 1),
+      'image_loader' => array('default' => 'false'),
+      'swipe' => array('default' => 1),
+
+      // Internet Explorer Tweaks
+      'cleartype' => array('default' => 'true'),
+      'cleartypenobg' => array('default' => 'false'),
+
+      // Advanced
+      'advanced_options' => array('default' => '{}'),
+    ),
+  );
+  return $options;
 }
 
 function views_slideshow_cycle2_form_options_js($element, &$form_state, &$form) {

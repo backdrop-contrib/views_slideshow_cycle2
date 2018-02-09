@@ -73,7 +73,16 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
   // Load our cycle css
   backdrop_add_css($module_path . '/views_slideshow_cycle2.css', 'file');
 
-  _views_slideshow_cycle2_load_js($module_path, array('#views_slideshow_cycle2_main_' . $vss_id => $settings));
+  backdrop_add_js(array('viewsSlideshowCycle2' => array('#views_slideshow_cycle2_main_' . $vss_id => $settings)), 'setting');
+  backdrop_add_js($module_path . '/js/views_slideshow_cycle2.js');
+  $cycle2 = libraries_detect('jquery.cycle2');
+  if ($cycle2['installed']) {
+    if ($load = libraries_load_files($cycle2)) {
+      foreach (array('#views_slideshow_cycle2_main_' . $vss_id => $settings) as $options) {
+        _views_slideshow_cycle2_load_effect_plugin($options['effect']);
+      }
+    }
+  }
 
   // Add the slideshow elements.
   $vars['classes_array'][] = 'views_slideshow_cycle2_teaser_section';
@@ -135,9 +144,9 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
   );
 
   // Implement effect-specific options
-  
+
   preg_match('/[a-z]+/', $settings['effect'], $effect_base);
-  
+
   if (isset($settings['effect_options'][$effect_base[0]])) {
     foreach ($settings['effect_options'][$effect_base[0]] as $key => $value) {
       $data_attributes[$key] = $value;
@@ -154,6 +163,17 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
       $vars['data_attr'] .= "data-cycle-$key=\"$value\" ";
     }
   }
+}
+
+/**
+ * Check if an effect is provided by a plugin, and load it if so.
+ */
+function _views_slideshow_cycle2_load_effect_plugin($effect) {
+    $plugin_effects = _views_slideshow_cycle2_get_plugin_effects();
+
+    if (isset($plugin_effects[$effect])) {
+      backdrop_add_js($plugin_effects[$effect]);
+    }
 }
 
 /**

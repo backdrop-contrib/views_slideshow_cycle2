@@ -1,3 +1,6 @@
+/**
+ * Custom styles for the Views Slideshow: Cycle2 module.
+ */
 
 .views_slideshow_cycle2_no_display,
 .views_slideshow_cycle2_hidden,
@@ -25,3 +28,4 @@
 .views_slideshow_cycle2_pager.numbered a.activeSlide {
   text-decoration: underline;
 }
+
