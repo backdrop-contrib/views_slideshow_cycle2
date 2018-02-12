@@ -50,24 +50,25 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['transition'] = array(
     '#markup' => '<h2>' . t('Transition') . '</h2>',
   );
-
   $plugin_effects = backdrop_map_assoc(array_keys(config_get('views_slideshow_cycle2.settings', 'plugin_effects')));
-  $form['views_slideshow_cycle2']['effect'] = array(
+  $form['views_slideshow_cycle2']['fx'] = array(
     '#type' => 'select',
     '#title' => t('Effect'),
-    '#description' => t('The transition effect that will be used to change between images.'),
+    '#description' => t('The transition effect used to change slides.'),
     '#options' => array(
       'none' => 'none',
       'fade' => 'fade',
       'fadeout' => 'fadeout',
       'scrollHorz' => 'scrollHorz',
     ) + $plugin_effects,
-    '#default_value' => $default_values['effect'],
+    '#default_value' => $default_values['fx'],
   );
 
+  // Transition effect options.
   // Create array of all options-enabled effects.
+  $plugins = views_slideshow_cycle2_supported_plugins();
   $conditions = array();
-  foreach (views_slideshow_cycle2_supported_plugins() as $plugin) {
+  foreach ($plugins as $plugin) {
     if (!empty($plugin['options'])) {
       foreach ($plugin['effects'] as $effect) {
         $conditions[]['value'] = $effect;
@@ -77,14 +78,15 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   $form['views_slideshow_cycle2']['effect_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Effect options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
     '#states' => array(
       'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][effect]"]' => $conditions,
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => $conditions,
       ),
     ),
   );
-
-  foreach (views_slideshow_cycle2_supported_plugins() as $plugin => $plugin_info) {
+  foreach ($plugins as $plugin => $plugin_info) {
     if (!empty($plugin_info['options'])) {
       // Create array of this plugin's effects.
       $conditions = array();
@@ -95,7 +97,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
         '#type' => 'container',
         '#states' => array(
           'visible' => array(
-            ':input[name="style_options[views_slideshow_cycle2][effect]"]' => $conditions,
+            ':input[name$="[views_slideshow_cycle2][fx]"]' => $conditions,
           ),
         ),
       );
@@ -108,387 +110,110 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     }
   }
 
-  // Transition advanced options
-  $form['views_slideshow_cycle2']['transition_advanced'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('View Transition Advanced Options'),
-    '#default_value' => $default_values['transition_advanced'],
-  );
-
-  // Need to wrap this so it indents correctly.
-  $form['views_slideshow_cycle2']['transition_advanced_wrapper'] = array(
-    '#markup' => '<div class="vs-dependent">',
-  );
-
   $form['views_slideshow_cycle2']['timeout'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Timer delay'),
+    '#type' => 'number',
+    '#title' => t('Slide interval'),
+    '#description' => t("Amount of time, in milliseconds, each slide is shown for. Set to '0' to disable the slideshow (slides must be transitioned manually)."),
     '#default_value' => $default_values['timeout'],
-    '#description' => t('Amount of time in milliseconds between transitions. Set the value to 0 to not rotate the slideshow automatically.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#min' => 0,
+    '#max' => 99999,
   );
   $form['views_slideshow_cycle2']['speed'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Speed'),
+    '#type' => 'number',
+    '#title' => t('Transition speed'),
+    '#description' => t('The speed, in milliseconds, of the transition effect.'),
     '#default_value' => $default_values['speed'],
-    '#description' => t('Time in milliseconds that each transition lasts. Numeric only!'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#min' => 1,
+    '#max' => 99999,
   );
-  $form['views_slideshow_cycle2']['delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Initial slide delay offset'),
+
+  // Transition advanced options.
+  $form['views_slideshow_cycle2']['transition_advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Transition advanced options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['views_slideshow_cycle2']['transition_advanced']['delay'] = array(
+    '#type' => 'number',
+    '#title' => t('Initial delay'),
+    '#description' => t("Amount of time, in milliseconds, to add onto or substract from the first slide's interval."),
     '#default_value' => $default_values['delay'],
-    '#description' => t('Amount of time in milliseconds for the first slide to transition. This number will be added to Timer delay to create the initial delay.  For example if Timer delay is 4000 and Initial delay is 2000 then the first slide will change at 6000ms (6 seconds).  If Initial delay is -2000 then the first slide will change at 2000ms (2 seconds).'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#min' => 0,
+    '#max' => 99999,
   );
-  $form['views_slideshow_cycle2']['sync'] = array(
+  $form['views_slideshow_cycle2']['transition_advanced']['sync'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Sync'),
+    '#title' => t('Synchronize transitions'),
+    '#description' => t('When enabled, the transition effect of the incoming and outgoing slides will be synchronized. When disabled, the transition effect for the incoming slide will not start until the transition effect for the outgoing slide completes.'),
     '#default_value' => $default_values['sync'],
-    '#description' => t('The sync option controls whether the slide transitions occur simultaneously. The default is selected which means that the current slide transitions out as the next slide transitions in. By unselecting this option you can get some interesting twists on your transitions.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
   );
-  $form['views_slideshow_cycle2']['swipe'] = array(
+  $form['views_slideshow_cycle2']['transition_advanced']['swipe'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Swipe'),
-    '#default_value' => $default_values['sync'],
-    '#description' => t('Enable browsing slides by swipe action on capable devices.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['views_slideshow_cycle2']['random'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Random'),
-    '#description' => t('This option controls the order items are displayed. The default setting, unselected, uses the views ordering. Selected will cause the images to display in a random order.'),
-    '#default_value' => $default_values['random'],
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][transition_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#title' => t('Swipe gesture support'),
+    '#description' => t('Enable swipe gesture support for advancing the slideshow forward or back on mobile devices.'),
+    '#default_value' => $default_values['swipe'],
   );
 
-  $form['views_slideshow_cycle2']['transition_advanced_wrapper_close'] = array(
-    '#markup' => '</div>',
-  );
-
-  // Action
+  // Action settings.
   $form['views_slideshow_cycle2']['action'] = array(
     '#markup' => '<h2>' . t('Action') . '</h2>',
   );
-  $form['views_slideshow_cycle2']['pause'] = array(
+  $form['views_slideshow_cycle2']['pause-on-hover'] = array(
     '#type' => 'checkbox',
     '#title' => t('Pause on hover'),
-    '#default_value' => $default_values['pause'],
-    '#description' => t('Pause when hovering on the slideshow image.'),
+    '#description' => t('Pause an auto-running slideshow while the mouse is over the slideshow.'),
+    '#default_value' => $default_values['pause-on-hover'],
   );
 
-  // Action Advanced Options
+  // Action advanced options.
   $form['views_slideshow_cycle2']['action_advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Action advanced options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['views_slideshow_cycle2']['action_advanced']['allow-wrap'] = array(
     '#type' => 'checkbox',
-    '#title' => t('View Action Advanced Options'),
-    '#default_value' => $default_values['action_advanced'],
+    '#title' => t('Loop slideshow'),
+    '#description' => t('When enabled, the slideshow will loop back to the first slide after showing the last one (and vice versa). When disabled, the slideshow will stop after the last slide.'),
+    '#default_value' => $default_values['allow-wrap'],
   );
-
-  // Need to wrap this so it indents correctly.
-  $form['views_slideshow_cycle2']['action_advanced_wrapper'] = array(
-    '#markup' => '<div class="vs-dependent">',
-  );
-
-  /*
-  $form['views_slideshow_cycle']['start_paused'] = array(
+  $form['views_slideshow_cycle2']['action_advanced']['paused'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Start Slideshow Paused'),
-    '#default_value' => $view->options['views_slideshow_cycle']['start_paused'],
-    '#description' => t('Start the slideshow in the paused state.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#title' => t('Begin paused'),
+    '#description' => t('Begin the slideshow in a paused state.'),
+    '#default_value' => $default_values['paused'],
   );
-  $form['views_slideshow_cycle']['remember_slide'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Start On Last Slide Viewed'),
-    '#default_value' => $view->options['views_slideshow_cycle']['remember_slide'],
-    '#description' => t('When the user leaves a page with a slideshow and comes back start them on the last slide viewed.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['views_slideshow_cycle']['remember_slide_days'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Length of Time to Remember Last Slide'),
-    '#default_value' => $view->options['views_slideshow_cycle']['remember_slide_days'],
-    '#description' => t('The number of days to have the site remember the last slide. Default is 1'),
-    '#prefix' => '<div class="vs-dependent">',
-    '#suffix' => '</div>',
-    '#size' => 4,
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-        ':input[name="style_options[views_slideshow_cycle][remember_slide]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-
-  if (!$pause_path = _views_slideshow_cycle_pause_library_path()) {
-    $form['views_slideshow_cycle']['pause_in_middle'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Pause The Slideshow In The Middle of the Transition'),
-      '#default_value' => $view->options['views_slideshow_cycle']['pause_in_middle'],
-      '#description' => t('When pausing the slideshow allow it to pause in the middle of tranistioning and not finish the transition until unpaused.'),
-      '#states' => array(
-        'visible' => array(
-          ':input[name="style_options[views_slideshow_cycle][transition_advanced]"]' => array('checked' => TRUE),
-        ),
-      ),
-    );
-  }
-
-  $form['views_slideshow_cycle']['pause_when_hidden'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Pause When the Slideshow is Not Visible'),
-    '#default_value' => $view->options['views_slideshow_cycle']['pause_when_hidden'],
-    '#description' => t('When the slideshow is scrolled out of view or when a window is resized that hides the slideshow, this will pause the slideshow.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['views_slideshow_cycle']['pause_when_hidden_type'] = array(
+  $form['views_slideshow_cycle2']['action_advanced']['auto-height'] = array(
     '#type' => 'select',
-    '#title' => t('How to Calculate Amount of Slide that Needs to be Shown'),
+    '#title' => t('Auto height'),
+    '#description' => t("The method used to determine and manage the height of the slideshow.<br><strong>Disabled:</strong> Disable height management (use CSS to manually set the height of your slideshow).<br><strong>First slide:</strong> The height of the first slide determines the height of the slideshow.<br><strong>Tallest slide:</strong> The height of the tallest slide determines the height of the slideshow.<br><strong>Dynamic:</strong> The height of the slideshow changes depending on the height of the current slide."),
     '#options' => array(
-      'full' => t('Entire slide'),
-      'vertical' => t('Set amount of vertical'),
-      'horizontal' => t('Set amount of horizontal'),
-      'area' => t('Set total area of the slide'),
+      'false' => t('Disabled'),
+      '0' => t('First slide'),
+      'calc' => t('Tallest slide'),
+      'container' => t('Dynamic'),
     ),
-    '#default_value' => $view->options['views_slideshow_cycle']['pause_when_hidden_type'],
-    '#description' => t('Choose how to calculate how much of the slide has to be shown. Entire Slide: All the slide has to be shown. Vertical: Set amount of height that has to be shown. Horizontal: Set amount of width that has to be shown. Area: Set total area that has to be shown.'),
-    '#prefix' => '<div class="vs-dependent">',
-    '#suffix' => '</div>',
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-        ':input[name="style_options[views_slideshow_cycle][pause_when_hidden]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#default_value' => $default_values['auto-height'],
   );
-  $form['views_slideshow_cycle']['amount_allowed_visible'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Amount of Slide Needed to be Shown'),
-    '#default_value' => $view->options['views_slideshow_cycle']['amount_allowed_visible'],
-    '#description' => t("The amount of the slide that needs to be shown to have it rotate. You can set the value in percentage (ex: 50%) or in pixels (ex: 250). The slidehsow will not rotate until it's height/width/total area, depending on the calculation method you have chosen above, is less than the value you have entered in this field."),
-    '#size' => 4,
-    '#process' => array('views_slideshow_cycle_form_options_js'),
-  );
-  */
-  $form['views_slideshow_cycle2']['nowrap'] = array(
+  $form['views_slideshow_cycle2']['action_advanced']['hide-non-active'] = array(
     '#type' => 'checkbox',
-    '#title' => t('End slideshow after last slide'),
-    '#default_value' => $default_values['nowrap'],
-    '#description' => t('If selected the slideshow will end when it gets to the last slide.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#title' => t('Hide inactive slides'),
+    '#description' => t('Disable to show inactive slides (e.g. when you want to achieve an offset stack effect using the Shuffle plugin).'),
+    '#default_value' => $default_values['hide-non-active'],
   );
-  /*
-  $form['views_slideshow_cycle']['fixed_height'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Make the slide window height fit the largest slide'),
-    '#default_value' => $view->options['views_slideshow_cycle']['fixed_height'],
-    '#description' => t('If unselected then if the slides are different sizes the height of the slide area will change as the slides change.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  $form['views_slideshow_cycle']['items_per_slide'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Items per slide'),
-    '#default_value' => $view->options['views_slideshow_cycle']['items_per_slide'],
-    '#description' => t('The number of items per slide'),
-    '#size' => 4,
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
-  );
-  */
-  $form['views_slideshow_cycle2']['image_loader'] = array(
+  $form['views_slideshow_cycle2']['action_advanced']['loader'] = array(
     '#type' => 'select',
+    '#title' => t('Image loader'),
+    '#description' => t('Set the image loader behavior for the slideshow.<br><strong>Wait:</strong> Wait for all images to load before starting the slideshow.<br><strong>Quick:</strong> Show slides as individual images load. NOTE: Slides may appear out of order.'),
     '#options' => array(
       'false' => t('None'),
       'wait' => t('Wait'),
       'true' => t('Quick'),
     ),
-    '#title' => t('Image loader'),
-    '#default_value' => $default_values['image_loader'],
-    '#description' => t('<strong>Wait</strong>: begin the slideshow after all images are loaded.') . '<br>' . t('<strong>Quick</strong>: begin the slideshow after any two images are loaded. Slides may appear out of order.'),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="style_options[views_slideshow_cycle2][action_advanced]"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#default_value' => $default_values['loader'],
   );
-
-  // Need to wrap this so it indents correctly.
-  $form['views_slideshow_cycle']['action_advanced_wrapper_close'] = array(
-    '#markup' => '</div>',
-  );
-
-  /*
-  // Internet Explorer Tweaks
-  $form['views_slideshow_cycle']['ie_tweaks'] = array(
-    '#markup' => '<h2>' . t('Internet Explorer Tweaks') . '</h2>',
-  );
-  $form['views_slideshow_cycle']['cleartype'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('ClearType'),
-    '#default_value' => $view->options['views_slideshow_cycle']['cleartype'],
-    '#description' => t('Select if clearType corrections should be applied (for IE).  Some background issues could be fixed by unselecting this option.'),
-  );
-  $form['views_slideshow_cycle']['cleartypenobg'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('ClearType Background'),
-    '#default_value' => $view->options['views_slideshow_cycle']['cleartypenobg'],
-    '#description' => t('Select to disable extra cleartype fixing.  Unselect to force background color setting on slides)'),
-  );
-
-
-
-
-  // Advanced Options
-  $form['views_slideshow_cycle']['advanced_options_header'] = array(
-    '#markup' => '<h2>' . t('jQuery Cycle Custom Options') . '</h2>',
-  );
-
-  $json2_path = libraries_get_path('json2');
-  if (empty($json2_path) || !file_exists($json2_path . '/json2.js')) {
-    $form['views_slideshow_cycle']['no_json_js'] = array(
-      '#markup' => '<div>' . t('To use the advanced options you need to download json2.js. You can do this by clicking the download button at !url and extract json2.js to sites/all/libraries/json2', array('!url' => l('https://github.com/douglascrockford/JSON-js', 'https://github.com/douglascrockford/JSON-js', array('attributes' => array('target' => '_blank'))))) . '</div>',
-    );
-  }
-  else {
-    $form['views_slideshow_cycle']['advanced_options_info'] = array(
-      '#markup' => '<p>' . t('You can find a list of all the available options at !url.  If one of the options you add uses a function, example fxFn, then you need to only enter what goes inside the function call. The variables that are in the documentation on the jquery cycle site will be available to you.', array('!url' => l('http://malsup.com/jquery/cycle/options.html', 'http://malsup.com/jquery/cycle/options.html'))) . '</p>',
-    );
-
-    // All the jquery cycle options according to
-    // http://malsup.com/jquery/cycle/options.html
-    $cycle_options = array(
-      0 => 'Select One',
-      'activePagerClass' => 'activePagerClass',
-      'after' => 'after',
-      'allowPagerClickBubble' => 'allowPagerClickBubble',
-      'animIn' => 'animIn',
-      'animOut' => 'animOut',
-      'autostop' => 'autostop',
-      'autostopCount' => 'autostopCount',
-      'backwards' => 'backwards',
-      'before' => 'before',
-      'bounce' => 'bounce',
-      'cleartype' => 'cleartype',
-      'cleartypeNoBg' => 'cleartypeNoBg',
-      'containerResize' => 'containerResize',
-      'continuous' => 'continuous',
-      'cssAfter' => 'cssAfter',
-      'cssBefore' => 'cssBefore',
-      'delay' => 'delay',
-      'easeIn' => 'easeIn',
-      'easeOut' => 'easeOut',
-      'easing' => 'easing',
-      'end' => 'end',
-      'fastOnEvent' => 'fastOnEvent',
-      'fit' => 'fit',
-      'fx' => 'fx',
-      'fxFn' => 'fxFn',
-      'height' => 'height',
-      'manualTrump' => 'manualTrump',
-      'metaAttr' => 'metaAttr',
-      'next' => 'next',
-      'nowrap' => 'nowrap',
-      'onPagerEvent' => 'onPagerEvent',
-      'onPrevNextEvent' => 'onPrevNextEvent',
-      'pager' => 'pager',
-      'pagerAnchorBuilder' => 'pagerAnchorBuilder',
-      'pagerEvent' => 'pagerEvent',
-      'pause' => 'pause',
-      'paused' => 'paused',
-      'pauseOnPagerHover' => 'pauseOnPagerHover',
-      'prev' => 'prev',
-      'prevNextEvent' => 'prevNextEvent',
-      'random' => 'random',
-      'randomizeEffects' => 'randomizeEffects',
-      'requeueOnImageNotLoaded' => 'requeueOnImageNotLoaded',
-      'requeueTimeout' => 'requeueTimeout',
-      'resumed' => 'resumed',
-      'rev' => 'rev',
-      'shuffle' => 'shuffle',
-      'slideExpr' => 'slideExpr',
-      'slideResize' => 'slideResize',
-      'speed' => 'speed',
-      'speedIn' => 'speedIn',
-      'speedOut' => 'speedOut',
-      'startingSlide' => 'startingSlide',
-      'sync' => 'sync',
-      'timeout' => 'timeout',
-      'timeoutFn' => 'timeoutFn',
-      'updateActivePagerLink' => 'updateActivePagerLink',
-      'width' => 'width',
-    );
-
-    $form['views_slideshow_cycle']['advanced_options_choices'] = array(
-      '#type' => 'select',
-      '#title' => t('Advanced Options'),
-      '#options' => $cycle_options,
-      '#process' => array('views_slideshow_cycle_form_options_js'),
-    );
-
-    $form['views_slideshow_cycle']['advanced_options_entry'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Advanced Option Value'),
-      '#description' => t('It is important that you click the Update link when you make any changes to the options or those changes will not be saved when you save the form.'),
-    );
-
-    $form['views_slideshow_cycle']['advanced_options'] = array(
-      '#type' => 'textarea',
-      '#default_value' => $view->options['views_slideshow_cycle']['advanced_options'],
-    );
-
-    $form['views_slideshow_cycle']['advanced_options_table'] = array(
-      '#markup' => '<table style="width: 400px; margin-left: 10px;" id="edit-style-options-views-slideshow-cycle-advanced-options-table"></table>'
-    );
-  }
-  */
 }
 
 /**
