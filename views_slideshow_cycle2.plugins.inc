@@ -76,7 +76,7 @@ function _carousel_options(&$form, $default_values) {
     '#default_value' => $default_values['carousel-fluid'],
     '#states' => array(
       'visible' => array(
-        ':input[name$="[carousel][carousel-visible]"]' => array('!value' => ''),
+        ':input[name$="[carousel-visible]"]' => array('!value' => ''),
       ),
     ),
   );

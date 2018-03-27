@@ -105,7 +105,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
       // Get form options from plugin.
       call_user_func_array($plugin_info['options'], array(
         &$form['views_slideshow_cycle2']['effect_options'][$plugin],
-        $default_values['effect_options'][$plugin],
+        $default_values,
       ));
     }
   }
@@ -197,12 +197,6 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     ),
     '#default_value' => $default_values['auto-height'],
   );
-  $form['views_slideshow_cycle2']['action_advanced']['hide-non-active'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Hide inactive slides'),
-    '#description' => t('Disable to show inactive slides (e.g. when you want to achieve an offset stack effect using the Shuffle plugin).'),
-    '#default_value' => $default_values['hide-non-active'],
-  );
   $form['views_slideshow_cycle2']['action_advanced']['loader'] = array(
     '#type' => 'select',
     '#title' => t('Image loader'),
@@ -217,64 +211,69 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
 }
 
 /**
- * Implements hook_views_slideshow_option_definition().
+ * Implements hook_views_slideshow_options_form_submit().
+ *
+ * Flatten form values array.
  */
-function views_slideshow_cycle2_views_slideshow_option_definition() {
-  $options['views_slideshow_cycle2'] = array(
-    'contains' => array(
-      // Transition
-      'effect' => array('default' => 'fade'),
-      'transition_advanced' => array('default' => 0),
-      'timeout' => array('default' => 5000),
-      'speed' => array('default' => 700), //normal
-      'delay' => array('default' => 0),
-      'sync' => array('default' => 1),
-      'random' => array('default' => 0),
+function views_slideshow_cycle2_views_slideshow_options_form_submit($form, &$form_state) {
+  $options = &$form_state['values']['style_options']['views_slideshow_cycle2'];
 
-      // Action
-      'pause' => array('default' => 1),
-      'pause_on_click' => array('default' => 0),
-      'action_advanced' => array('default' => 0),
-      'start_paused' => array('default', 0),
-      'remember_slide' => array('default' => 0),
-      'remember_slide_days' => array('default' => 1),
-      'pause_in_middle' => array('default' => 0),
-      'pause_when_hidden' => array('default' => 0),
-      'pause_when_hidden_type' => array('default' => 'full'),
-      'amount_allowed_visible' => array('default' => ''),
-      'nowrap' => array('default' => 0),
-      'fixed_height' => array('default' => 1),
-      'items_per_slide' => array('default' => 1),
-      'image_loader' => array('default' => 'false'),
-      'swipe' => array('default' => 1),
+  // Transition effect options.
+  foreach ($options['effect_options'] as $plugin) {
+    foreach ($plugin as $key => $value) {
+      $options[$key] = $value;
+    }
+  }
+  unset($options['effect_options']);
 
-      // Internet Explorer Tweaks
-      'cleartype' => array('default' => 'true'),
-      'cleartypenobg' => array('default' => 'false'),
+  // Transition advanced options.
+  foreach ($options['transition_advanced'] as $key => $value) {
+    $options[$key] = $value;
+  }
+  unset($options['transition_advanced']);
 
-      // Advanced
-      'advanced_options' => array('default' => '{}'),
-    ),
-  );
-  return $options;
-}
-
-function views_slideshow_cycle2_form_options_js($element, &$form_state, &$form) {
-  backdrop_add_js('formoptions', 'views_slideshow_cycle2');
-  return $element;
+  // Action advanced options.
+  foreach ($options['action_advanced'] as $key => $value) {
+    $options[$key] = $value;
+  }
+  unset($options['action_advanced']);
 }
 
 /**
- * Implements hook_views_slideshow_options_form_validate().
+ * Implements hook_views_slideshow_option_definition().
  */
-function views_slideshow_cycle2_views_slideshow_options_form_validate(&$form, &$form_state, &$view) {
-  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['speed']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['speed'])) {
-    form_error($form['views_slideshow_cycle2']['speed'], t('!setting must be numeric!', array('Speed')));
-  }
-  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['timeout']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['timeout'])) {
-    form_error($form['views_slideshow_cycle2']['speed'], t('!setting must be numeric!', array('timeout')));
-  }
-  if (!empty($form_state['values']['style_options']['views_slideshow_cycle2']['remember_slide_days']) && !is_numeric($form_state['values']['style_options']['views_slideshow_cycle2']['remember_slide_days'])) {
-    form_error($form['views_slideshow_cycle2']['remember_slide_days'], t('!setting must be numeric!', array('Slide days')));
-  }
+function views_slideshow_cycle2_views_slideshow_option_definition() {
+  return array(
+    'views_slideshow_cycle2' => array(
+      'contains' => array(
+        'fx' => array('default' => 'fade'),
+
+        // Effect options.
+        'carousel-vertical' => array('default' => 'false'),
+        'carousel-visible' => array('default' => NULL),
+        'carousel-fluid' => array('default' => FALSE),
+        'shuffle-left' => array('default' => 0),
+        'shuffle-right' => array('default' => 0),
+        'shuffle-top' => array('default' => 15),
+        'tile-vertical' => array('default' => 'true'),
+        'tile-count' => array('default' => 7),
+        'tile-delay' => array('default' => 100),
+
+        // Transition.
+        'timeout' => array('default' => 4000),
+        'speed' => array('default' => 500),
+        'delay' => array('default' => 0),
+        'sync' => array('default' => TRUE),
+        'swipe' => array('default' => FALSE),
+
+        // Action.
+        'pause-on-hover' => array('default' => FALSE),
+        'allow-wrap' => array('default' => TRUE),
+        'paused' => array('default' => FALSE),
+        'auto-height' => array('default' => '0'),
+        'loader' => array('default' => 'false'),
+      ),
+    ),
+  );
 }
+

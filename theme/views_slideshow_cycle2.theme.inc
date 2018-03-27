@@ -1,32 +1,34 @@
 <?php
-
 /**
  * @file
- * Theme & preprocess functions for the Views Slideshow: cycle module.
+ * Theme & preprocess functions for the Views Slideshow: Cycle2 module.
  */
 
 /**
- * Views Slideshow: Theme the main frame wrapper.
+ * Theme the slideshow main frame.
  *
  * @ingroup themeable
  */
-
-function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
+function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
   $settings = $vars['settings'];
-  $rows = $vars['rows'];
-  $view = $vars['view'];
   $vss_id = $vars['vss_id'];
 
-  // Cast the strings into int or bool as necessary.
-  $new_settings = array();
-  foreach ($settings as $key => $value) {
-    if (is_string($value)) {
-      $value = str_replace("\n", ' ', $value);
+  // Load the Cycle2 library files, exit if unsuccessful.
+  $library = libraries_load('jquery.cycle2');
+  if (!$library['loaded']) {
+    return;
+  }
 
-      $value = trim($value);
+  // Load our custom CSS.
+  //backdrop_add_css(backdrop_get_path('module', 'views_slideshow_cycle2') . '/views_slideshow_cycle2.css', 'file');
+
+  // Clean up settings.
+  foreach ($settings as $key => &$value) {
+    if (is_string($value)) {
+      $value = trim(str_replace("\n", ' ', $value));
 
       if (is_numeric($value)) {
-        $value = (int)$value;
+        $value = (int) $value;
       }
       elseif (strtolower($value) == 'true') {
         $value = TRUE;
@@ -35,184 +37,203 @@ function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame(&$
         $value = FALSE;
       }
     }
-
-    $new_settings[$key] = $value;
   }
 
-  $settings = array_merge(
-    array(
-      'num_divs' => sizeof($rows),
-      'id_prefix' => '#views_slideshow_cycle2_main_',
-      'div_prefix' => '#views_slideshow_cycle2_div_',
-      'vss_id' => $vss_id,
-    ),
-    $new_settings
-  );
+  // Add hard-coded settings.
+  $settings['log'] = FALSE;
+  $settings['next'] = '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-next';
+  $settings['pager'] = '#widget_pager_top_' . $vss_id . ', #widget_pager_bottom_' . $vss_id;
+  $settings['pager-template'] = '';
+  $settings['prev'] = '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-previous';
+  $settings['slides'] = '> .views-slideshow-cycle2-slide';
 
-  // We need to go through the current js setting values to make sure the one we
-  // want to add is not already there. If it is already there then append -[num]
-  // to the id to make it unique.
-  $slideshow_count = 1;
-  $current_settings = backdrop_add_js();
-  foreach ($current_settings['settings']['data'] AS $current_setting) {
-    if (isset($current_setting['viewsSlideshowCycle2'])) {
-      $current_keys = array_keys($current_setting['viewsSlideshowCycle2']);
-      if (stristr($current_keys[0], '#views_slideshow_cycle2_main_' . $vss_id)) {
-        $slideshow_count++;
-      }
+  // Setup data attributes.
+  $vars['data_attr'] = '';
+  foreach ($settings as $key => $value) {
+    if (is_bool($value)) {
+      $value = ($value) ? 'true' : 'false';
     }
+    $vars['data_attr'] .= ' data-cycle-' . $key . '="' . $value . '"';
   }
 
-  if ($slideshow_count > 1) {
-    $vss_id .= '-' . $slideshow_count;
-    $settings['vss_id'] = $vss_id;
+  // Initialize Cycle2 with a class.
+  $vars['classes_array'][] = 'cycle-slideshow';
+  $vars['classes_array'][] = 'views-slideshow-cycle2-main-frame';
+
+  // Get slides.
+  $vars['rendered_rows'] = '';
+  $total = count($vars['rows']);
+  foreach ($vars['rows'] as $key => $row) {
+    $vars['rendered_rows'] .= theme(views_theme_functions('views_slideshow_cycle2_main_frame_slide', $vars['view'], $vars['view']->display[$vars['view']->current_display]), array('fields' => $row, 'key' => $key, 'total' => $total, 'options' => $vars['options'], 'views_style_plugin' => $vars['view']->style_plugin));
   }
 
-  $module_path = backdrop_get_path('module', 'views_slideshow_cycle2');
-
-  // Load our cycle css
-  backdrop_add_css($module_path . '/views_slideshow_cycle2.css', 'file');
-
-  backdrop_add_js(array('viewsSlideshowCycle2' => array('#views_slideshow_cycle2_main_' . $vss_id => $settings)), 'setting');
-  backdrop_add_js($module_path . '/js/views_slideshow_cycle2.js');
-  $cycle2 = libraries_detect('jquery.cycle2');
-  if ($cycle2['installed']) {
-    if ($load = libraries_load_files($cycle2)) {
-      foreach (array('#views_slideshow_cycle2_main_' . $vss_id => $settings) as $options) {
-        _views_slideshow_cycle2_load_effect_plugin($options['effect']);
-      }
-    }
-  }
-
-  // Add the slideshow elements.
-  $vars['classes_array'][] = 'views_slideshow_cycle2_teaser_section';
-
-  $styles = '';
-  if (isset($view->display_handler->display->display_options['style_options']['views_slideshow_cycle2'])) {
-    $styles = $view->display_handler->display->display_options['style_options']['views_slideshow_cycle2'];
-  }
-
-  $styles_default = '';
-  if (isset($view->display['default']->display_options['style_options']['views_slideshow_cycle2'])) {
-    $styles_default = $view->display['default']->display_options['style_options']['views_slideshow_cycle2'];
-  }
-
-  // Retrive the number of items per frame
-  if (isset($styles['items_per_slide']) && $styles['items_per_slide'] > 0) {
-    $items_per_slide = $styles['items_per_slide'];
-  }
-  elseif (isset($styles_default['items_per_slide']) && $styles_default['items_per_slide'] > 0) {
-    $items_per_slide = $styles_default['items_per_slide'];
-  }
-  else {
-    $items_per_slide = 1;
-  }
-
-  $vars['items_per_slide'] = $items_per_slide;
-
-  $items = array();
-  $slideshow_count = 0;
-  $rendered_rows = '';
-  foreach ($rows as $count => $item) {
-    $items[] = $item;
-    if (count($items) == $items_per_slide || $count == (count($rows)-1)) {
-      $rendered_rows .= theme(views_theme_functions('views_slideshow_cycle2_main_frame_row', $vars['view'], $vars['view']->display[$vars['view']->current_display]), array('vss_id' => $vss_id, 'items' => $items, 'count' => $slideshow_count, 'view' => $vars['view']));
-      $items = array();
-      $slideshow_count++;
-    }
-  }
-
-  $vars['rendered_rows'] = $rendered_rows;
-
-  $data_attributes = array(
-    'allow-wrap' => $settings['nowrap'] == 0 ? true : false,
+  /*$data_attributes = array(
+    'allow-wrap' => $settings['nowrap'] == 0 ? TRUE : FALSE,
     'delay' => $settings['delay'],
     'fx' => $settings['effect'],
-    'pause-on-hover' => $settings['pause'] == 0 ? false : true,
-    'random' => $settings['random'] == 0 ? false : true,
+    'pause-on-hover' => $settings['pause'] == 0 ? FALSE : TRUE,
+    'random' => $settings['random'] == 0 ? FALSE : TRUE,
     'speed' => $settings['speed'],
-    'swipe' => $settings['swipe'] == 0 ? false : true,
+    'swipe' => $settings['swipe'] == 0 ? FALSE : TRUE,
     'timeout' => $settings['timeout'],
     'loader' => $settings['image_loader'],
-
-    'log' => 'false',
-    'pager' => '#widget_pager_bottom_' . $vss_id . ', #widget_pager_top_' . $vss_id, // TODO: Check that vss_id is always correct
-    'pager-template' => '', // By default Cycle2 will add its own pager elements, but we have our own
+    'log' => FALSE,
+    'pager' => '#widget_pager_bottom_' . $vss_id . ', #widget_pager_top_' . $vss_id,
+    'pager-template' => '',
     'prev' => '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-previous',
     'next' => '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-next',
     'slides' => '> .views_slideshow_slide',
   );
 
-  // Implement effect-specific options
-
-  preg_match('/[a-z]+/', $settings['effect'], $effect_base);
-
+  // Implement effect-specific options.
+  preg_match('/[a-z]+/', $settings['fx'], $effect_base);
   if (isset($settings['effect_options'][$effect_base[0]])) {
     foreach ($settings['effect_options'][$effect_base[0]] as $key => $value) {
       $data_attributes[$key] = $value;
     }
-  }
+  }*/
 
-  $vars['data_attr'] = '';
-
-  foreach ($data_attributes as $key => $value) {
-    if ($value === true || $value === false) {
-      $value = $value === true ? 'true' : 'false';
-      $vars['data_attr'] .= "data-cycle-$key=$value ";
-    } else {
-      $vars['data_attr'] .= "data-cycle-$key=\"$value\" ";
-    }
-  }
+  $vars['classes'] = implode(' ', $vars['classes_array']);
 }
 
 /**
- * Check if an effect is provided by a plugin, and load it if so.
- */
-function _views_slideshow_cycle2_load_effect_plugin($effect) {
-    $plugin_effects = _views_slideshow_cycle2_get_plugin_effects();
-
-    if (isset($plugin_effects[$effect])) {
-      backdrop_add_js($plugin_effects[$effect]);
-    }
-}
-
-/**
- * Views Slideshow slideshow rows.
+ * Theme a slideshow slide.
  *
  * @ingroup themeable
  */
-function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame_row(&$vars) {
-  $current = $vars['count'] + 1;
-  $vars['classes_array'][] = 'views_slideshow_cycle2_slide';
-  $vars['classes_array'][] = 'views_slideshow_slide views-row-' . $current;
+function template_preprocess_views_slideshow_cycle2_main_frame_slide(&$vars) {
+  $count = $vars['key'] + 1;
 
-  if ($vars['count']) {
-    $vars['classes_array'][] =  'views_slideshow_cycle2_hidden';
-  }
-  $vars['classes_array'][] = ($vars['count'] % 2) ? 'views-row-even' : 'views-row-odd';
+  // Add custom classes.
+  $vars['classes_array'][] = 'views-slideshow-cycle2-slide';
+  $vars['classes_array'][] = 'views-slideshow-slide';
 
-  $vars['rendered_items'] = '';
-  foreach ($vars['items'] as $item_count => $item) {
-    $vars['rendered_items'] .= theme(views_theme_functions('views_slideshow_cycle2_main_frame_row_item', $vars['view'], $vars['view']->display[$vars['view']->current_display]), array('item' => $item, 'item_count' => $item_count, 'count' => $vars['count'], 'view' => $vars['view']));
+  // Add views classes.
+  if ($vars['options']['default_row_class']) {
+    $vars['classes_array'][] = 'views-row';
+    $vars['classes_array'][] = 'views-row-' . $count;
   }
-}
-
-function _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame_row_item(&$vars) {
-  $vars['classes_array'][] = 'views-row views-row-' . $vars['item_count'];
-  if (!$vars['item_count']) {
-    $vars['classes_array'][] = 'views-row-first';
+  if ($vars['options']['row_class_special']) {
+    $vars['classes_array'][] = ($count % 2) ? 'odd' : 'even';
+    if ($count == 1) {
+      $vars['classes_array'][] = 'first';
+    }
+    if ($count == $vars['total']) {
+      $vars['classes_array'][] = 'last';
+    }
   }
-  if ($vars['item_count'] % 2) {
-    $vars['classes_array'][] = 'views-row-even';
-  }
-  else {
-    $vars['classes_array'][] = 'views-row-odd';
-  }
-
-  /**
-   * Support custom row classes.
-   */
-  if ($row_class = $vars['view']->style_plugin->get_row_class($vars['count'])) {
+  if ($row_class = $vars['views_style_plugin']->get_row_class($vars['key'])) {
     $vars['classes_array'][] = $row_class;
   }
+
+  $vars['classes'] = implode(' ', $vars['classes_array']);
 }
+
+/**
+* Theme the main frame wrapper.
+*
+* @ingroup themeable
+*/
+/*function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
+ $settings = $vars['settings'];
+ $vss_id = $vars['vss_id'];
+
+ // Load the Cycle2 library files, exit if unsuccessful.
+ $library = libraries_load('jquery.cycle2');
+ if (!$library['loaded']) {
+   return;
+ }
+
+ // Load our custom CSS.
+ backdrop_add_css(backdrop_get_path('module', 'views_slideshow_cycle2') . '/views_slideshow_cycle2.css', 'file');
+
+ // Clean up settings.
+ foreach ($settings as $key => &$value) {
+   if (is_string($value)) {
+     $value = trim(str_replace("\n", ' ', $value));
+
+     if (is_numeric($value)) {
+       $value = (int) $value;
+     }
+     elseif (strtolower($value) == 'true') {
+       $value = TRUE;
+     }
+     elseif (strtolower($value) == 'false') {
+       $value = FALSE;
+     }
+   }
+ }
+ $settings['vss_id'] = $vss_id;
+ dpm($settings);
+
+ // Initialize Cycle2 with a class.
+ $vars['classes'][] = 'cycle-slideshow';
+
+ // Get slides.
+ dpm($vars['rows']);
+ dpm($vars['rendered_rows'] = theme(views_theme_functions('views_slideshow_cycle2_main_frame_row', $vars['view'], $vars['view']->display[$vars['view']->current_display]), array('vss_id' => $vss_id, 'items' => $vars['rows'], 'view' => $vars['view'])));
+
+ $data_attributes = array(
+   'allow-wrap' => $settings['nowrap'] == 0 ? TRUE : FALSE,
+   'delay' => $settings['delay'],
+   'fx' => $settings['effect'],
+   'pause-on-hover' => $settings['pause'] == 0 ? FALSE : TRUE,
+   'random' => $settings['random'] == 0 ? FALSE : TRUE,
+   'speed' => $settings['speed'],
+   'swipe' => $settings['swipe'] == 0 ? FALSE : TRUE,
+   'timeout' => $settings['timeout'],
+   'loader' => $settings['image_loader'],
+   'log' => FALSE,
+   'pager' => '#widget_pager_bottom_' . $vss_id . ', #widget_pager_top_' . $vss_id,
+   'pager-template' => '',
+   'prev' => '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-previous',
+   'next' => '#views_slideshow_controls_text_' . $vss_id . ' .views-slideshow-controls-text-next',
+   'slides' => '> .views_slideshow_slide',
+ );
+
+ // Implement effect-specific options.
+ preg_match('/[a-z]+/', $settings['fx'], $effect_base);
+ if (isset($settings['effect_options'][$effect_base[0]])) {
+   foreach ($settings['effect_options'][$effect_base[0]] as $key => $value) {
+     $data_attributes[$key] = $value;
+   }
+ }
+
+ $vars['data_attr'] = '';
+ foreach ($data_attributes as $key => $value) {
+   if ($value === TRUE || $value === FALSE) {
+     $value = ($value) ? 'true' : 'false';
+     $vars['data_attr'] .= " data-cycle-$key=$value";
+   }
+   else {
+     $vars['data_attr'] .= " data-cycle-$key=\"$value\"";
+   }
+ }
+}*/
+
+/**
+* Views Slideshow slideshow rows.
+*
+* @ingroup themeable
+*/
+/*function template_preprocess_views_slideshow_cycle2_main_frame_row(&$vars) {
+ $vars['classes'][] = 'views_slideshow_cycle2_slide';
+
+ $vars['rendered_items'] = '';
+ foreach ($vars['items'] as $item_count => $item) {
+   $vars['rendered_items'] .= theme(views_theme_functions('views_slideshow_cycle2_main_frame_row_item', $vars['view'], $vars['view']->display[$vars['view']->current_display]), array('item' => $item, 'item_count' => $item_count, 'view' => $vars['view']));
+ }
+}*/
+
+/*function template_preprocess_views_slideshow_cycle2_main_frame_row_item(&$vars) {
+ $vars['classes'][] = 'views-row views-row-' . $vars['item_count'];
+ if (!$vars['item_count']) {
+   $vars['classes'][] = 'views-row-first';
+ }
+ if ($vars['item_count'] % 2) {
+   $vars['classes'][] = 'views-row-even';
+ }
+ else {
+   $vars['classes'][] = 'views-row-odd';
+ }
+}*/

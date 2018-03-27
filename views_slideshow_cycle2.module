@@ -72,52 +72,31 @@ function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
 /**
  * Implements hook_theme().
  */
-/*function views_slideshow_cycle2_theme($existing, $type, $theme, $path) {
+function views_slideshow_cycle2_theme($existing, $type, $theme, $path) {
   return array(
-    'views_slideshow_cycle2' => array(
-      'variables' => array('view' => NULL, 'settings' => array(), 'rows' => array(), 'title' => ''),
-      'template' => 'theme/views-slideshow-cycle2',
-      'file' => 'theme/views_slideshow_cycle2.theme.inc',
-      'pattern' => 'views_slideshow_cycle2__',
-    ),
     'views_slideshow_cycle2_main_frame' => array(
-      'variables' => array('vss_id' => NULL, 'view' => NULL, 'settings' => NULL, 'rows' => NULL),
+      'variables' => array(
+        'settings' => NULL,
+        'vss_id' => NULL,
+        'rows' => NULL,
+        'view' => NULL,
+      ),
+      'file' => 'theme/views_slideshow_cycle2.theme.inc',
       'template' => 'theme/views-slideshow-cycle2-main-frame',
       'pattern' => 'views_slideshow_cycle2_main_frame__',
     ),
-    'views_slideshow_cycle2_main_frame_row' => array(
-      'variables' => array('vss_id' => NULL, 'items' => NULL, 'count' => NULL, 'view' => NULL),
-      'template' => 'theme/views-slideshow-cycle2-main-frame-row',
-      'pattern' => 'views_slideshow_cycle2_main_frame_row__',
-    ),
-    'views_slideshow_cycle2_main_frame_row_item' => array(
-      'variables' => array('item' => NULL, 'item_count' => NULL, 'count' => NULL, 'view' => NULL),
-      'template' => 'theme/views-slideshow-cycle2-main-frame-row-item',
-      'views_slideshow_cycle2_main_frame_row_item__',
+    'views_slideshow_cycle2_main_frame_slide' => array(
+      'variables' => array(
+        'fields' => NULL,
+        'key' => NULL,
+        'total' => NULL,
+        'options' => NULL,
+        'views_style_plugin' => NULL,
+      ),
+      'file' => 'theme/views_slideshow_cycle2.theme.inc',
+      'template' => 'theme/views-slideshow-cycle2-main-frame-slide',
+      'pattern' => 'views_slideshow_cycle2_main_frame_slide__',
     ),
   );
-}*/
-
-/**
- * Need to have preprocess functions here because drupal doesn't cache them
- * correctly in the theme.inc file.
- *
- * If you would like to override the preprocess functions make sure to look at
- * the associated function in theme.inc.
- */
-
-// Trying to make sure the theme.inc get's loaded.
-//include_once('theme/views_slideshow_cycle2.theme.inc');
-
-/*function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
-  _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame($vars);
 }
-
-function template_preprocess_views_slideshow_cycle2_main_frame_row(&$vars) {
-  _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame_row($vars);
-}
-
-function template_preprocess_views_slideshow_cycle2_main_frame_row_item(&$vars) {
-  _views_slideshow_cycle2_preprocess_views_slideshow_cycle2_main_frame_row_item($vars);
-}*/
 

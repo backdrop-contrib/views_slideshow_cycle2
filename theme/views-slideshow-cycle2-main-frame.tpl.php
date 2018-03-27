@@ -1,4 +1,4 @@
-<?php $classes = implode(' ', $classes) . ' ' . implode(' ', $classes_array); ?>
-<div id="views_slideshow_cycle2_teaser_section_<?php print $variables['vss_id']; ?>" <?php print $data_attr; ?> class="<?php print $classes; ?>">
+<div id="views-slideshow-cycle2-main-frame-<?php print $vss_id; ?>" class="<?php print $classes; ?>" <?php print $data_attr; ?>>
   <?php print $rendered_rows; ?>
 </div>
+
