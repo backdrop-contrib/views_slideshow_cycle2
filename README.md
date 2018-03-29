@@ -1,59 +1,63 @@
-# Views Slideshow Cycle 2
+Views Slideshow: Cycle2
+=======================
 
-This module provides a jQuery Cycle2 slideshow plugin for Views Slideshow,
-heavily based on Views Slideshow: Cycle (bundled with Views Slideshow).
-Modifications have been made to interface with some basic options of Cycle2,
-though a lot remains to be done. New options added to Cycle2's API during
-its beta will be accounted for where possible.
+'Views Slideshow: Cycle2' is an integration of the
+[Cycle2 jQuery plugin](http://jquery.malsup.com/cycle2/) with the
+[Views Slideshow](https://backdropcms.org/project/views_slideshow) module.
 
-Benefits to using Cycle2 over the original Cycle are that Cycle2 natively
-handles responsive design and (with an optional plugin) swipe events
-on capable devices.
+Some of the benefits of using Cycle2 over the original Cycle plugin (which comes
+bundled with Views Slideshow) are the inclusion of responsive design and, with
+an optional plugin, swipe events on capable devices.
 
-## Status
+This module depends on:
 
-This port is based on a sandbox project for Drupal,
-see https://www.drupal.org/sandbox/BenYoung/1832338.
-I have found it necessary when creating the slideshow
-to add into the view the class 'cycle-slideshow' to
-a div surrounding the image files in order to get the images to cycle.
-Perhaps in future this could be built into the module's theme.
+- [Views Slideshow](https://backdropcms.org/project/views_slideshow)
+- [Libraries](https://backdropcms.org/project/libraries)
 
-## Installation
+It's based on the
+[Drupal sandbox module](https://www.drupal.org/sandbox/BenYoung/1832338) of the
+same name.
 
-- Install this module using the official Backdrop CMS instructions at
-  https://backdropcms.org/guide/modules.
+Installation
+------------
 
-- Download the Cycle 2 library from http://malsup.github.io/jquery.cycle2.js
+- Install this module, and its dependencies, using the official Backdrop CMS
+  instructions at https://backdropcms.org/guide/modules
 
-- Place jquery.cycle2.js or its minified version inside the sites
-  libraries folder e.g. libraries/jquery.cycle2
+- Download the production (minified) version of the
+  [Cycle2 jQuery plugin](http://malsup.github.io/min/jquery.cycle2.min.js) and
+  place it in the 'libraries/jquery.cycle2' directory
 
-- Optionally, place jquery.cycle2.swipe.js inside the same folder.
-  Other plugins will be supported in the future.
+- Optionally, download the production (minified) version of Cycle2's other
+  [plugins](http://jquery.malsup.com/cycle2/download/) into the same folder
 
+Documentation
+-------------
 
-## Use
+Create a view and set the format to 'Slideshow'. In the format settings, set the
+slideshow type to 'Cycle2'. Configure the Cycle2 options as necessary.
 
-  When creating or editing a View using the Slideshow display mode,
-  select the Cycle2 slideshow type in the display settings, under Slides.
-  (The original Cycle slideshow type is not required.)
+Issues
+------
 
+Bugs and Feature requests should be reported in the Issue Queue:
+https://github.com/backdrop-contrib/views_slideshow_cycle2/issues
 
-## License
+Current Maintainers
+-------------------
 
-This project is GPL v2 software. See the LICENSE.txt file in this directory for complete text.
-    
-        
-## Current Maintainer for Backdrop
+- Peter Anderson (https://github.com/BWPanda/)
 
-Graham Oliver (github.com/Graham-72/)
+Credits
+-------
 
-## Credits
+- Ported to Backdrop CMS by Graham Oliver (https://github.com/Graham-72/)
+- Originally written for Drupal by Ben Young
+  (https://www.drupal.org/u/ben-young)
 
-### Developer for Drupal:
+License
+-------
 
-- Ben Young
-
-
+This project is GPL v2 software. See the LICENSE.txt file in this directory for
+complete text.
 
