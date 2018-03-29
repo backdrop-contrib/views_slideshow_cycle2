@@ -147,12 +147,14 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#title' => t('Synchronize transitions'),
     '#description' => t('When enabled, the transition effect of the incoming and outgoing slides will be synchronized. When disabled, the transition effect for the incoming slide will not start until the transition effect for the outgoing slide completes.'),
     '#default_value' => $default_values['sync'],
+    '#return_value' => TRUE,
   );
   $form['views_slideshow_cycle2']['transition_advanced']['swipe'] = array(
     '#type' => 'checkbox',
     '#title' => t('Swipe gesture support'),
     '#description' => t('Enable swipe gesture support for advancing the slideshow forward or back on mobile devices.'),
     '#default_value' => $default_values['swipe'],
+    '#return_value' => TRUE,
   );
 
   // Action settings.
@@ -164,6 +166,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#title' => t('Pause on hover'),
     '#description' => t('Pause an auto-running slideshow while the mouse is over the slideshow.'),
     '#default_value' => $default_values['pause-on-hover'],
+    '#return_value' => TRUE,
   );
 
   // Action advanced options.
@@ -178,12 +181,14 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#title' => t('Loop slideshow'),
     '#description' => t('When enabled, the slideshow will loop back to the first slide after showing the last one (and vice versa). When disabled, the slideshow will stop after the last slide.'),
     '#default_value' => $default_values['allow-wrap'],
+    '#return_value' => TRUE,
   );
   $form['views_slideshow_cycle2']['action_advanced']['paused'] = array(
     '#type' => 'checkbox',
     '#title' => t('Begin paused'),
     '#description' => t('Begin the slideshow in a paused state.'),
     '#default_value' => $default_values['paused'],
+    '#return_value' => TRUE,
   );
   $form['views_slideshow_cycle2']['action_advanced']['auto-height'] = array(
     '#type' => 'select',
@@ -212,31 +217,33 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
 
 /**
  * Implements hook_views_slideshow_options_form_submit().
- *
- * Flatten form values array.
  */
 function views_slideshow_cycle2_views_slideshow_options_form_submit($form, &$form_state) {
   $options = &$form_state['values']['style_options']['views_slideshow_cycle2'];
 
-  // Transition effect options.
+  // Flatten form values array.
   foreach ($options['effect_options'] as $plugin) {
     foreach ($plugin as $key => $value) {
       $options[$key] = $value;
     }
   }
   unset($options['effect_options']);
-
-  // Transition advanced options.
   foreach ($options['transition_advanced'] as $key => $value) {
     $options[$key] = $value;
   }
   unset($options['transition_advanced']);
-
-  // Action advanced options.
   foreach ($options['action_advanced'] as $key => $value) {
     $options[$key] = $value;
   }
   unset($options['action_advanced']);
+
+  // Convert boolean integers to TRUE/FALSE.
+  $booleans = array('sync', 'swipe', 'pause-on-hover', 'allow-wrap', 'paused');
+  foreach ($options as $key => &$value) {
+    if (in_array($key, $booleans)) {
+      $value = ($value) ? TRUE : FALSE;
+    }
+  }
 }
 
 /**

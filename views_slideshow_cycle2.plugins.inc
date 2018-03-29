@@ -74,6 +74,7 @@ function _carousel_options(&$form, $default_values) {
     '#title' => t('Responsive'),
     '#description' => t("If this is enabled and 'Number of slides' is set, then the slides within the carousel will be resized in order to fill the container with the number of slides specified above."),
     '#default_value' => $default_values['carousel-fluid'],
+    '#return_value' => TRUE,
     '#states' => array(
       'visible' => array(
         ':input[name$="[carousel-visible]"]' => array('!value' => ''),
