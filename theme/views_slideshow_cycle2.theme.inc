@@ -37,8 +37,8 @@ function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
   }
 
   // Initialize Cycle2 with a class.
-  $vars['classes_array'][] = 'cycle-slideshow';
-  $vars['classes_array'][] = 'views-slideshow-cycle2-main-frame';
+  $vars['classes'][] = 'cycle-slideshow';
+  $vars['classes'][] = 'views-slideshow-cycle2-main-frame';
 
   // Get slides.
   $vars['rendered_rows'] = '';
@@ -52,8 +52,6 @@ function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
       'views_style_plugin' => $vars['view']->style_plugin,
     ));
   }
-
-  $vars['classes'] = implode(' ', $vars['classes_array']);
 }
 
 /**
@@ -65,27 +63,25 @@ function template_preprocess_views_slideshow_cycle2_main_frame_slide(&$vars) {
   $count = $vars['key'] + 1;
 
   // Add custom classes.
-  $vars['classes_array'][] = 'views-slideshow-cycle2-slide';
-  $vars['classes_array'][] = 'views-slideshow-slide';
+  $vars['classes'][] = 'views-slideshow-cycle2-slide';
+  $vars['classes'][] = 'views-slideshow-slide';
 
   // Add views classes.
   if ($vars['options']['default_row_class']) {
-    $vars['classes_array'][] = 'views-row';
-    $vars['classes_array'][] = 'views-row-' . $count;
+    $vars['classes'][] = 'views-row';
+    $vars['classes'][] = 'views-row-' . $count;
   }
   if ($vars['options']['row_class_special']) {
-    $vars['classes_array'][] = ($count % 2) ? 'odd' : 'even';
+    $vars['classes'][] = ($count % 2) ? 'odd' : 'even';
     if ($count == 1) {
-      $vars['classes_array'][] = 'first';
+      $vars['classes'][] = 'first';
     }
     if ($count == $vars['total']) {
-      $vars['classes_array'][] = 'last';
+      $vars['classes'][] = 'last';
     }
   }
   if ($row_class = $vars['views_style_plugin']->get_row_class($vars['key'])) {
-    $vars['classes_array'][] = $row_class;
+    $vars['classes'][] = $row_class;
   }
-
-  $vars['classes'] = implode(' ', $vars['classes_array']);
 }
 

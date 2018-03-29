@@ -1,4 +1,4 @@
-<div class="<?php print $classes; ?>">
+<div class="<?php print implode(' ', $classes); ?>">
   <?php print $fields; ?>
 </div>
 
