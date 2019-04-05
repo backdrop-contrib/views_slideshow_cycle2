@@ -8,7 +8,7 @@
 /**
  * Delete config.
  */
-function hook_update_1201() {
+function views_slideshow_cycle2_update_1201() {
   $config = config('views_slideshow_cycle2.settings');
   $config->delete();
 }
@@ -16,7 +16,7 @@ function hook_update_1201() {
 /**
  * Rename & convert plugin effects string to array.
  */
-function hook_update_1200() {
+function views_slideshow_cycle2_update_1200() {
   $config = config('views_slideshow_cycle2.settings');
 
   $effects = $config->get('views_slideshow_cycle2_plugin_effects');
