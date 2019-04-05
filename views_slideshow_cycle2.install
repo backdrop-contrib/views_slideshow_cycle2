@@ -6,6 +6,14 @@
  */
 
 /**
+ * Delete config.
+ */
+function hook_update_1201() {
+  $config = config('views_slideshow_cycle2.settings');
+  $config->delete();
+}
+
+/**
  * Rename & convert plugin effects string to array.
  */
 function hook_update_1200() {

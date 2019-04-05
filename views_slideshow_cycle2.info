@@ -4,5 +4,4 @@ backdrop = 1.x
 type = module
 package = Views
 dependencies[] = views_slideshow
-dependencies[] = libraries
 

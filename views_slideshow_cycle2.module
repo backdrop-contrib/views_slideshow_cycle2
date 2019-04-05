@@ -5,68 +5,69 @@
  */
 
 /**
- * Implements hook_config_info().
+ * Implements hook_library_info().
  */
-function views_slideshow_cycle2_config_info() {
-  return array(
-    'views_slideshow_cycle2.settings' => array(
-      'label' => t('Views Slideshow: Cycle2 settings'),
-      'group' => t('Configuration'),
+function views_slideshow_cycle2_library_info() {
+  $path = backdrop_get_path('module', 'views_slideshow_cycle2') . '/cycle2';
+
+  $libraries['cycle2'] = array(
+    'title' => 'Cycle2',
+    'website' => 'http://jquery.malsup.com/cycle2/',
+    'version' => '2.1.6',
+    'js' => array(
+      $path . '/jquery.cycle2.min.js' => array(),
     ),
   );
-}
-
-/**
- * Implements hook_libraries_info().
- */
-function views_slideshow_cycle2_libraries_info() {
-  $libraries['jquery.cycle2'] = array(
-    'name' => 'Cycle2',
-    'vendor url' => 'http://jquery.malsup.com/cycle2/',
-    'download url' => 'http://jquery.malsup.com/cycle2/download/',
-    'version arguments' => array(
-      'file' => 'jquery.cycle2.min.js',
-      'pattern' => '/ver.*? ([a-z0-9\-\.]+)/i',
-      'lines' => 5,
+  $libraries['cycle2.carousel'] = array(
+    'title' => 'Cycle2: Carousel',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.carousel.min.js' => array(),
     ),
-    'files' => array(
-      'js' => array('jquery.cycle2.min.js'),
+  );
+  $libraries['cycle2.flip'] = array(
+    'title' => 'Cycle2: Flip',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.flip.min.js' => array(),
+    ),
+  );
+  $libraries['cycle2.scrollVert'] = array(
+    'title' => 'Cycle2: ScrollVert',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.scrollVert.min.js' => array(),
+    ),
+  );
+  $libraries['cycle2.shuffle'] = array(
+    'title' => 'Cycle2: Shuffle',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.shuffle.min.js' => array(),
+    ),
+  );
+  $libraries['cycle2.tile'] = array(
+    'title' => 'Cycle2: Tile',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.tile.min.js' => array(),
+    ),
+  );
+  $libraries['cycle2.swipe'] = array(
+    'title' => 'Cycle2: Swipe',
+    'website' => $libraries['cycle2']['website'],
+    'version' => $libraries['cycle2']['version'],
+    'js' => array(
+      $path . '/jquery.cycle2.swipe.min.js' => array(),
     ),
   );
 
   return $libraries;
-}
-
-/**
- * Implements hook_libraries_info_alter().
- *
- * Add plugins to the library, and get any effects provided by the plugins.
- */
-function views_slideshow_cycle2_libraries_info_alter(&$libraries) {
-  module_load_include('inc', 'views_slideshow_cycle2', 'views_slideshow_cycle2.plugins');
-
-  // Ignore old effects (in case plugins have been removed).
-  $effects = array();
-  $transition_plugins = views_slideshow_cycle2_supported_plugins();
-
-  // Get all plugins.
-  $plugins = file_scan_directory(libraries_get_path('jquery.cycle2'), '/jquery\.cycle2\..*?\.min\.js/i');
-  foreach ($plugins as $plugin) {
-    // Add plugin to library.
-    $libraries['jquery.cycle2']['files']['js'][$plugin->filename] = array('weight' => 1);
-
-    // Get any effects.
-    $filename_parts = explode('.', $plugin->filename);
-    $plugin_name = $filename_parts[2];
-    if (!empty($transition_plugins[$plugin_name])) {
-      foreach ($transition_plugins[$plugin_name]['effects'] as $effect) {
-        $effects[$effect] = $plugin->uri;
-      }
-    }
-  }
-
-  // Save new effects.
-  config_set('views_slideshow_cycle2.settings', 'plugin_effects', $effects);
 }
 
 /**

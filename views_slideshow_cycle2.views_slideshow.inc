@@ -35,46 +35,33 @@ function views_slideshow_cycle2_views_slideshow_slideshow_info() {
  * Implements hook_views_slideshow_slideshow_type_form().
  */
 function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$form_state, &$view) {
-  form_load_include($form_state, 'inc', 'views_slideshow_cycle2', 'views_slideshow_cycle2.plugins');
   $default_values = $view->options['views_slideshow_cycle2'];
-
-  // Display message if Cycle2 plugin not installed.
-  $library = libraries_detect('jquery.cycle2');
-  if (empty($library['installed'])) {
-    $form['views_slideshow_cycle2']['no_cycle2_js'] = array(
-      '#markup' => '<div style="color: red;">' . t('The Cycle2 jQuery plugin is not installed. Please refer to the Views Slideshow: Cycle2 README file for installation instructions.') . '</div>',
-    );
-  }
 
   // Transition settings.
   $form['views_slideshow_cycle2']['transition'] = array(
     '#markup' => '<h2>' . t('Transition') . '</h2>',
   );
-  $plugin_effects = backdrop_map_assoc(array_keys(config_get('views_slideshow_cycle2.settings', 'plugin_effects')));
   $form['views_slideshow_cycle2']['fx'] = array(
     '#type' => 'select',
     '#title' => t('Effect'),
     '#description' => t('The transition effect used to change slides.'),
     '#options' => array(
-      'none' => 'none',
-      'fade' => 'fade',
-      'fadeout' => 'fadeout',
-      'scrollHorz' => 'scrollHorz',
-    ) + $plugin_effects,
+      'none' => 'None',
+      'fade' => 'Fade',
+      'fadeout' => 'Fade out',
+      'scrollHorz' => 'Scroll (horizontal)',
+      'scrollVert' => 'Scroll (vertical)',
+      'carousel' => 'Carousel',
+      'flipHorz' => 'Flip (horizontal)',
+      'flipVert' => 'Flip (vertical)',
+      'shuffle' => 'Shuffle',
+      'tileSlide' => 'Tile (slide)',
+      'tileBlind' => 'Tile (blinds)',
+    ),
     '#default_value' => $default_values['fx'],
   );
 
   // Transition effect options.
-  // Create array of all options-enabled effects.
-  $plugins = views_slideshow_cycle2_supported_plugins();
-  $conditions = array();
-  foreach ($plugins as $plugin) {
-    if (!empty($plugin['options'])) {
-      foreach ($plugin['effects'] as $effect) {
-        $conditions[]['value'] = $effect;
-      }
-    }
-  }
   $form['views_slideshow_cycle2']['effect_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Effect options'),
@@ -82,33 +69,146 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#collapsed' => FALSE,
     '#states' => array(
       'visible' => array(
-        ':input[name$="[views_slideshow_cycle2][fx]"]' => $conditions,
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array(
+          array('value' => 'carousel'),
+          array('value' => 'shuffle'),
+          array('value' => 'tileSlide'),
+          array('value' => 'tileBlind'),
+        ),
       ),
     ),
   );
-  foreach ($plugins as $plugin => $plugin_info) {
-    if (!empty($plugin_info['options'])) {
-      // Create array of this plugin's effects.
-      $conditions = array();
-      foreach ($plugin_info['effects'] as $effect) {
-        $conditions[]['value'] = $effect;
-      }
-      $form['views_slideshow_cycle2']['effect_options'][$plugin] = array(
-        '#type' => 'container',
-        '#states' => array(
-          'visible' => array(
-            ':input[name$="[views_slideshow_cycle2][fx]"]' => $conditions,
-          ),
+  // Carousel.
+  $form['views_slideshow_cycle2']['effect_options']['carousel-vertical'] = array(
+    '#type' => 'select',
+    '#title' => t('Direction'),
+    '#options' => array(
+      'false' => t('Horizontal'),
+      'true' => t('Vertical'),
+    ),
+    '#default_value' => $default_values['carousel-vertical'],
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'carousel'),
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['carousel-visible'] = array(
+    '#type' => 'number',
+    '#title' => t('Number of slides'),
+    '#description' => t("Number of slides to be displayed in the carousel. Leave empty to display as many slides as can fit in the slideshow container. Setting this option will cause the carousel to have a fixed width unless 'Responsive' is set below."),
+    '#default_value' => $default_values['carousel-visible'],
+    '#min' => 1,
+    '#max' => 999,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'carousel'),
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['carousel-fluid'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Responsive'),
+    '#description' => t("If this is enabled and 'Number of slides' is set, then the slides within the carousel will be resized in order to fill the container with the number of slides specified above."),
+    '#default_value' => $default_values['carousel-fluid'],
+    '#return_value' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'carousel'),
+        ':input[name$="[carousel-visible]"]' => array('!value' => ''),
+      ),
+    ),
+  );
+  // Shuffle.
+  $form['views_slideshow_cycle2']['effect_options']['shuffle-left'] = array(
+    '#type' => 'number',
+    '#title' => t('Left position'),
+    '#description' => t("Number of pixels relative to the container's left edge to move the slide when transitioning. Set to negative to move beyond the container's left edge."),
+    '#default_value' => $default_values['shuffle-left'],
+    '#min' => -9999,
+    '#max' => 9999,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'shuffle'),
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['shuffle-right'] = array(
+    '#type' => 'number',
+    '#title' => t('Right position'),
+    '#description' => t("Number of pixels relative to the container's right edge to move the slide when transitioning. Set to negative to move beyond the container's right edge. If 'Left position' is set above, this value will be ignored."),
+    '#default_value' => $default_values['shuffle-right'],
+    '#min' => -9999,
+    '#max' => 9999,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'shuffle'),
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['shuffle-top'] = array(
+    '#type' => 'number',
+    '#title' => t('Vertical position'),
+    '#description' => t("Number of pixels to shuffle in a vertical direction. A positive number indicates shuffling the slide downward and a negative number indicates shuffling upward."),
+    '#default_value' => $default_values['shuffle-top'],
+    '#min' => -9999,
+    '#max' => 9999,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array('value' => 'shuffle'),
+      ),
+    ),
+  );
+  // Tile.
+  $form['views_slideshow_cycle2']['effect_options']['tile-vertical'] = array(
+    '#type' => 'select',
+    '#title' => t('Direction'),
+    '#options' => array(
+      'true' => t('Vertical'),
+      'false' => t('Horizontal'),
+    ),
+    '#default_value' => $default_values['tile-vertical'],
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array(
+          array('value' => 'tileSlide'),
+          array('value' => 'tileBlind'),
         ),
-      );
-
-      // Get form options from plugin.
-      call_user_func_array($plugin_info['options'], array(
-        &$form['views_slideshow_cycle2']['effect_options'][$plugin],
-        $default_values,
-      ));
-    }
-  }
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['tile-count'] = array(
+    '#type' => 'number',
+    '#title' => t('Tile count'),
+    '#description' => t('The number of tiles to use in the transition.'),
+    '#default_value' => $default_values['tile-count'],
+    '#min' => 1,
+    '#max' => 99,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array(
+          array('value' => 'tileSlide'),
+          array('value' => 'tileBlind'),
+        ),
+      ),
+    ),
+  );
+  $form['views_slideshow_cycle2']['effect_options']['tile-delay'] = array(
+    '#type' => 'number',
+    '#title' => t('Tile delay'),
+    '#description' => t('The number of milliseconds to delay each individual tile transition.'),
+    '#default_value' => $default_values['tile-delay'],
+    '#min' => 1,
+    '#max' => 9999,
+    '#states' => array(
+      'visible' => array(
+        ':input[name$="[views_slideshow_cycle2][fx]"]' => array(
+          array('value' => 'tileSlide'),
+          array('value' => 'tileBlind'),
+        ),
+      ),
+    ),
+  );
 
   $form['views_slideshow_cycle2']['timeout'] = array(
     '#type' => 'number',
@@ -222,10 +322,8 @@ function views_slideshow_cycle2_views_slideshow_options_form_submit($form, &$for
   $options = &$form_state['values']['style_options']['views_slideshow_cycle2'];
 
   // Flatten form values array.
-  foreach ($options['effect_options'] as $plugin) {
-    foreach ($plugin as $key => $value) {
-      $options[$key] = $value;
-    }
+  foreach ($options['effect_options'] as $key => $value) {
+    $options[$key] = $value;
   }
   unset($options['effect_options']);
   foreach ($options['transition_advanced'] as $key => $value) {
