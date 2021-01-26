@@ -12,12 +12,21 @@
 function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
   $settings = $vars['settings'];
   $vss_id = $vars['vss_id'];
+  $plugins = array(
+    'scrollVert' => 'scrollVert',
+    'carousel' => 'carousel',
+    'flipHorz' => 'flip',
+    'flipVert' => 'flip',
+    'shuffle' => 'shuffle',
+    'tileSlide' => 'tile',
+    'tileBlind' => 'tile',
+  );
 
   // Add the necessary Cycle2 library files, exit if unsuccessful.
   $cycle2_added = $plugin_added = $swipe_added = TRUE;
   $cycle2_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2');
-  if (backdrop_get_library('views_slideshow_cycle2', 'cycle2.' . $settings['fx'])) {
-    $plugin_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.' . $settings['fx']);
+  if (!empty($plugins[$settings['fx']])) {
+    $plugin_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.' . $plugins[$settings['fx']]);
   }
   if ($settings['swipe']) {
     $swipe_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.swipe');
@@ -91,4 +100,3 @@ function template_preprocess_views_slideshow_cycle2_main_frame_slide(&$vars) {
     $vars['classes'][] = $row_class;
   }
 }
-

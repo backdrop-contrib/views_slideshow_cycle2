@@ -9,59 +9,61 @@
  */
 function views_slideshow_cycle2_library_info() {
   $path = backdrop_get_path('module', 'views_slideshow_cycle2') . '/cycle2';
+  $website = 'http://jquery.malsup.com/cycle2/';
+  $version = '2.1.6';
 
   $libraries['cycle2'] = array(
     'title' => 'Cycle2',
-    'website' => 'http://jquery.malsup.com/cycle2/',
-    'version' => '2.1.6',
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.min.js' => array(),
     ),
   );
   $libraries['cycle2.carousel'] = array(
     'title' => 'Cycle2: Carousel',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.carousel.min.js' => array(),
     ),
   );
   $libraries['cycle2.flip'] = array(
     'title' => 'Cycle2: Flip',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.flip.min.js' => array(),
     ),
   );
   $libraries['cycle2.scrollVert'] = array(
     'title' => 'Cycle2: ScrollVert',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.scrollVert.min.js' => array(),
     ),
   );
   $libraries['cycle2.shuffle'] = array(
     'title' => 'Cycle2: Shuffle',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.shuffle.min.js' => array(),
     ),
   );
   $libraries['cycle2.tile'] = array(
     'title' => 'Cycle2: Tile',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.tile.min.js' => array(),
     ),
   );
   $libraries['cycle2.swipe'] = array(
     'title' => 'Cycle2: Swipe',
-    'website' => $libraries['cycle2']['website'],
-    'version' => $libraries['cycle2']['version'],
+    'website' => $website,
+    'version' => $version,
     'js' => array(
       $path . '/jquery.cycle2.swipe.min.js' => array(),
     ),
@@ -100,4 +102,3 @@ function views_slideshow_cycle2_theme($existing, $type, $theme, $path) {
     ),
   );
 }
-

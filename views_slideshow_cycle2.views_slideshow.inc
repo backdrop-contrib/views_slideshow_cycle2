@@ -381,4 +381,3 @@ function views_slideshow_cycle2_views_slideshow_option_definition() {
     ),
   );
 }
-
