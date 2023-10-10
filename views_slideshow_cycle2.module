@@ -68,6 +68,14 @@ function views_slideshow_cycle2_library_info() {
       $path . '/jquery.cycle2.swipe.min.js' => array(),
     ),
   );
+  $libraries['cycle2.center'] = array(
+    'title' => 'Cycle2: Centered Slides',
+    'website' => $website,
+    'version' => $version,
+    'js' => array(
+      $path . '/jquery.cycle2.center.min.js' => array(),
+    ),
+  );
 
   return $libraries;
 }
