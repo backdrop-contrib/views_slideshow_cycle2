@@ -38,7 +38,7 @@ https://github.com/backdrop-contrib/views_slideshow_cycle2/issues
 Current Maintainers
 -------------------
 
-- Peter Anderson (https://github.com/BWPanda/)
+- Seeking maintainer(s)
 
 Credits
 -------
