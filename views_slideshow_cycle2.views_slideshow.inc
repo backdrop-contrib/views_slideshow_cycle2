@@ -230,7 +230,7 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
   // Functional Plugins.
   $form['views_slideshow_cycle2']['center'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Centered Slides '),
+    '#title' => t('Centered Slides'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
