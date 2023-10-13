@@ -227,6 +227,26 @@ function views_slideshow_cycle2_views_slideshow_slideshow_type_form(&$form, &$fo
     '#max' => 99999,
   );
 
+  // Functional Plugins.
+  $form['views_slideshow_cycle2']['center'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Centered Slides'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['views_slideshow_cycle2']['center']['center-horz'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Center slides horizontally'),
+    '#default_value' => $default_values['center-horz'],
+    '#return_value' => TRUE,
+  );
+  $form['views_slideshow_cycle2']['center']['center-vert'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Center slides vertically'),
+    '#default_value' => $default_values['center-vert'],
+    '#return_value' => TRUE,
+  );
+
   // Transition advanced options.
   $form['views_slideshow_cycle2']['transition_advanced'] = array(
     '#type' => 'fieldset',
@@ -334,9 +354,21 @@ function views_slideshow_cycle2_views_slideshow_options_form_submit($form, &$for
     $options[$key] = $value;
   }
   unset($options['action_advanced']);
+  foreach ($options['center'] as $key => $value) {
+    $options[$key] = $value;
+  }
+  unset($options['center']);
 
   // Convert boolean integers to TRUE/FALSE.
-  $booleans = array('sync', 'swipe', 'pause-on-hover', 'allow-wrap', 'paused');
+  $booleans = array(
+    'sync',
+    'swipe',
+    'pause-on-hover',
+    'allow-wrap',
+    'paused',
+    'center-horz',
+    'center-vert',
+  );
   foreach ($options as $key => &$value) {
     if (in_array($key, $booleans)) {
       $value = ($value) ? TRUE : FALSE;
@@ -370,6 +402,10 @@ function views_slideshow_cycle2_views_slideshow_option_definition() {
         'delay' => array('default' => 0),
         'sync' => array('default' => TRUE),
         'swipe' => array('default' => FALSE),
+
+        // Function.
+        'center-horz' => array('default' => FALSE),
+        'center-vert' => array('default' => FALSE),
 
         // Action.
         'pause-on-hover' => array('default' => FALSE),

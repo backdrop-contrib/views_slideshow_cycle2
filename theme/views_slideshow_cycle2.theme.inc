@@ -23,13 +23,16 @@ function template_preprocess_views_slideshow_cycle2_main_frame(&$vars) {
   );
 
   // Add the necessary Cycle2 library files, exit if unsuccessful.
-  $cycle2_added = $plugin_added = $swipe_added = TRUE;
+  $cycle2_added = $plugin_added = $swipe_added = $center_added = TRUE;
   $cycle2_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2');
   if (!empty($plugins[$settings['fx']])) {
     $plugin_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.' . $plugins[$settings['fx']]);
   }
   if ($settings['swipe']) {
     $swipe_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.swipe');
+  }
+  if ($settings['center-horz'] || $settings['center-vert']) {
+    $center_added = backdrop_add_library('views_slideshow_cycle2', 'cycle2.center');
   }
   if (!$cycle2_added || !$plugin_added || !$swipe_added) {
     return;
