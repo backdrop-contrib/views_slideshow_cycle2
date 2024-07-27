@@ -2,5 +2,9 @@ name = Views Slideshow: Cycle2
 description = Integrates the Cycle2 jQuery plugin with the Views Slideshow module.
 backdrop = 1.x
 type = module
+
+maintainers[yorkshire-pudding] = Martin Price
+maintainers_wanted = TRUE
+
 package = Views
 dependencies[] = views_slideshow
