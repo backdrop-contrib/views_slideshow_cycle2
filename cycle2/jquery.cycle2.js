@@ -40,7 +40,7 @@ $.fn.cycle = function( options ) {
         data = container.data();
         for (var p in data) {
             // allow props to be accessed sans 'cycle' prefix and log the overrides
-            if (data.hasOwnProperty(p) && /^cycle[A-Z]+/.test(p) ) {
+            if (typeof data[p] !== undefined && /^cycle[A-Z]+/.test(p) ) {
                 val = data[p];
                 shortName = p.match(/^cycle(.*)/)[1].replace(/^[A-Z]/, lowerCase);
                 log(shortName+':', val, '('+typeof val +')');
@@ -205,7 +205,7 @@ $.fn.cycle.API = {
         var startSlideshow = false;
         var len;
 
-        if ( $.type(slides) == 'string')
+        if ( typeof slides == 'string')
             slides = $.trim( slides );
 
         $( slides ).each(function(i) {
@@ -423,7 +423,7 @@ $.fn.cycle.API = {
             }
         }
         if ( timeout ) {
-            opts._lastQueue = $.now();
+            opts._lastQueue = Date.now();
             if ( specificTimeout === undefined )
                 opts._remainingTimeout = slideOpts.timeout;
 
@@ -700,7 +700,7 @@ $.extend($.fn.cycle.defaults, {
 
 $(document).on( 'cycle-initialized', function( e, opts ) {
     var autoHeight = opts.autoHeight;
-    var t = $.type( autoHeight );
+    var t = typeof  autoHeight;
     var resizeThrottle = null;
     var ratio;
 
@@ -751,7 +751,7 @@ function initAutoHeight( e, opts ) {
     else if ( opts._autoHeightRatio ) { 
         opts.container.height( opts.container.width() / opts._autoHeightRatio );
     }
-    else if ( autoHeight === 'calc' || ( $.type( autoHeight ) == 'number' && autoHeight >= 0 ) ) {
+    else if ( autoHeight === 'calc' || ( typeof autoHeight == 'number' && autoHeight >= 0 ) ) {
         if ( autoHeight === 'calc' )
             sentinelIndex = calcSentinelIndex( e, opts );
         else if ( autoHeight >= opts.slides.length )
@@ -873,11 +873,11 @@ $.fn.cycle = function( options ) {
     var cmd, cmdFn, opts;
     var args = $.makeArray( arguments );
 
-    if ( $.type( options ) == 'number' ) {
+    if ( typeof options == 'number' ) {
         return this.cycle( 'goto', options );
     }
 
-    if ( $.type( options ) == 'string' ) {
+    if ( typeof options == 'string' ) {
         return this.each(function() {
             var cmdArgs;
             cmd = options;
@@ -1123,9 +1123,9 @@ $(document).on( 'cycle-bootstrap', function( e, opts ) {
 
     function add( slides, prepend ) {
         var slideArr = [];
-        if ( $.type( slides ) == 'string' )
+        if ( typeof slides == 'string' )
             slides = $.trim( slides );
-        else if ( $.type( slides) === 'array' ) {
+        else if ( typeof slides === 'array' ) {
             for (var i=0; i < slides.length; i++ )
                 slides[i] = $(slides[i])[0];
         }
@@ -1389,7 +1389,7 @@ $(document).on( 'cycle-pre-initialize', function( e, opts ) {
     var nextFn = API.next;
     var prevFn = API.prev;
     var prepareTxFn = API.prepareTx;
-    var type = $.type( opts.progressive );
+    var type = typeof opts.progressive;
     var slides, scriptEl;
 
     if ( type == 'array' ) {
