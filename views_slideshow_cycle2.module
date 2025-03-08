@@ -17,7 +17,7 @@ function views_slideshow_cycle2_library_info() {
     'website' => $website,
     'version' => $version,
     'js' => array(
-      $path . '/jquery.cycle2.min.js' => array(),
+      $path . '/jquery.cycle2.js' => array(),
     ),
   );
   $libraries['cycle2.carousel'] = array(
